@@ -10,10 +10,13 @@ must be robust enough for a Master's Thesis or research meeting.
 
 ## Repository structure
 - data/              → all raw and processed CSV datasets
-- notebooks/         → one independent Jupyter notebook per phase
-- latex/             → LaTeX analysis documents, one per phase
-- latex/figures/     → all saved matplotlib figures (.png, dpi=150)
-- papers/            → reference PDFs
+- benchmark_notebooks/         → one independent Jupyter notebook per phase (dataset A)
+- benchmark_latex/             → LaTeX analysis documents, one per phase (dataset A)
+- benchmark_latex/figures/     → all saved matplotlib figures (.png, dpi=150) (dataset A)
+- reference_nb/                → one independent Jupyter notebook per phase (dataset B)
+- reference_tex/               → LaTeX analysis documents, one per phase (dataset B)
+- reference_tex/plots/         → all plots and figures (dataset B)
+- papers/            → general reference PDFs
 - reports/           → ROADMAP.docx and council_specs.md
 
 ---
@@ -30,7 +33,7 @@ Status: Phases 1–4 COMPLETE. Notebooks validated.
 Note: Low wind site (mean 2.47 m/s), lognormal distribution,
       proxy-quality data. Used to build and validate methodology.
 
-### Dataset B — Production dataset (to be used for all the phases)
+### Dataset B — Reference dataset (to be used for all the phases)
 Source: Open-Meteo Historical Weather API, ERA5 reanalysis model
 File: data/germany_wind.csv
 Location: Nordfriesland, Schleswig-Holstein, Germany (lat=54.77, lon=8.85)
@@ -127,16 +130,6 @@ ECMWF hub-height data (future Phase 2 data upgrade).
 ---
 
 ## Citation rules — available papers (all PDFs in papers/)
-Alexandrinis (2013), Benth & Šaltytė Benth (2009), Bollerslev (1986),
-Engle (1982), Tol (1997), Garcia et al. (1998), Torres et al. (2005),
-Tuller & Brett (1984), Ailliot et al. (2006),
-Barndorff-Nielsen & Shephard (2001), Brockwell & Marquardt (2005),
-Schwartz (1997), Alaton et al. (2002), Härdle & Cabrera (2011),
-Dorfleitner & Wimmer (2010), Heston (1993), Carr & Lee (2009).
-NOT available — do not cite:
-  Benth et al. (2008) book, Karatzas & Shreve (1994).
-
----
 
 ## Code standards
 Python: pandas, numpy, scipy, statsmodels, arch, matplotlib.
@@ -148,7 +141,6 @@ File I/O uses relative paths from the notebook's location:
                            ../data/Actual_generation_2.csv
   SMARD prices (raw):      ../data/Day_ahead_prices_1.csv
                            ../data/Day_ahead_prices_2.csv
-  Processed outputs:       ../data/processed_[name]_[phase].csv
 No magic numbers — use named constants at top of each cell.
 Figures: PNG, dpi=150, saved to ../latex/figures/.
 LaTeX style: match Phases 1–4 exactly (graybox, litbox, darkblue/midblue).
