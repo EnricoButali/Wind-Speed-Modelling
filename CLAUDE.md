@@ -123,11 +123,17 @@ Defer all SV estimation to ECMWF hourly data (future upgrade).
   Load garch_parameters_phase3.csv and h_series_phase3.csv.
   Compute 2κ_V v̄ and ξ² numerically. State whether Feller holds.
 
-  ## 4. CHANGE OF MEASURE (P → Q)
-  Girsanov: add wind-speed risk premium θ₁ and variance risk premium θ₂.
-  Under Q:  κ_V^Q = κ_V + θ₂ξ,   v̄^Q = κ_V v̄ / (κ_V + θ₂ξ)
-  Working assumption: θ₁ = θ₂ = 0  (no calibration, geographic mismatch
-  with Nordix per CLAUDE.md). P = Q for all computations below.
+  ## 4. REMARK ON CHANGE OF MEASURE
+  Formally, Girsanov would shift drifts: κ_V^Q = κ_V + θ₂ξ.
+  In this application θ₁ = θ₂ = 0 throughout because:
+    (a) SMARD G_t is a physical quantity, not a traded asset — no Q
+        measure is attached to it and no replication argument applies.
+    (b) The only observable traded wind derivatives (Nordix futures)
+        cover Norway, not Nordfriesland — geographic mismatch prevents
+        calibration of θ.
+  Consequence: P = Q. Track A (empirical mean RV under P) and Track B
+  (model-implied E^Q[∫σ²dt]) coincide, and Track B reduces to h × C0.
+  No Girsanov computation is needed anywhere in Phases 5 or 6.
 
   ## 5. CHARACTERISTIC FUNCTION
   Log-char. function of W̃(T) given F_t (Heston 1993):
