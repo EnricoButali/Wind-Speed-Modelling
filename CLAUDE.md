@@ -51,8 +51,8 @@ Source: Bundesnetzagentur SMARD platform (smard.de/en)
 Files:
   data/Actual_generation_1.csv   → wind onshore generation, hourly (batch 1)
   data/Actual_generation_2.csv   → wind onshore generation, hourly (batch 2)
-  data/Day_ahead_prices_1.csv    → German day-ahead electricity price €/MWh (batch 1)
-  data/Day_ahead_prices_2.csv    → German day-ahead electricity price €/MWh (batch 2)
+  data/Day-ahead_prices_1.csv    → German day-ahead electricity price €/MWh (batch 1)
+  data/Day-ahead_prices_2.csv    → German day-ahead electricity price €/MWh (batch 2)
 Coverage: 2015–2024, hourly resolution, Country: Germany
 Price note: Day_ahead_prices files contain two columns:
   - Column C  (Germany/Luxembourg [€/MWh]): valid from 01/10/2018 onwards
@@ -86,33 +86,196 @@ Dataset B will produce its own numerical anchors — document separately.
 
 ---
 
-## Phase 5 — scope rules (CRITICAL)
-THEORETICAL CHAPTER ONLY on both datasets.
-Do NOT attempt Heston MLE — identification fails at any sample available.
-Deliverables: two-SDE system, Feller condition 2κ_V v̄ > ξ²,
-semi-analytic futures price via characteristic function.
-Defer empirical estimation to ECMWF Phase 2 data.
+## Phase 5 — Stochastic Volatility: Theoretical Chapter
+
+### Scope rules (CRITICAL)
+THEORETICAL CHAPTER ONLY. Do NOT attempt Heston MLE — identification
+fails at daily frequency. One empirical computation is allowed: substitute
+GARCH proxy values into the Feller condition to check it numerically.
+Defer all SV estimation to ECMWF hourly data (future upgrade).
+
+### Inputs consumed (reference_nb paths)
+  ../Phase_3/garch_parameters_phase3.csv   → ω, α, β for Feller proxy
+  ../Phase_4/car4_parameters_phase4.csv    → α₁ for OU comparison
+  ../Phase_4/car4_conditional_forecast_phase4.csv → benchmark for term structure plot
+
+### Notebook structure (reference_nb/Phase_5/Phase_5.ipynb)
+
+  ## 1. MOTIVATION
+  Why GARCH h(t) is insufficient for continuous-time pricing: discrete filter
+  cannot be embedded in Feynman-Kač. Need V(t) as a semimartingale.
+
+  ## 2. TWO-SDE SYSTEM UNDER P
+  Wind speed (CAR(4) residual layer):
+    dW̃(t) = −α₁ W̃(t) dt + √V(t) dB₁(t)   [simplified to CAR(1) for tractability]
+  Variance process (CIR / square-root):
+    dV(t) = κ_V(v̄ − V(t)) dt + ξ √V(t) dB₂(t)
+    ⟨dB₁, dB₂⟩_t = ρ dt
+  State vector form for full CAR(4): replace scalar α₁ with matrix A.
+  Reference: Heston (1993), Schwartz (1997).
+
+  ## 3. FELLER CONDITION
+  Condition: 2 κ_V v̄ > ξ²  (ensures V(t) > 0 a.s.)
+  GARCH proxy mapping:
+    v̄  ≈ ω / (1 − α − β)         (unconditional variance)
+    κ_V ≈ 1 − (α + β)             (mean-reversion speed)
+    ξ²  ≈ Var of h(t) series      (proxy: rolling std of h_series)
+  Load garch_parameters_phase3.csv and h_series_phase3.csv.
+  Compute 2κ_V v̄ and ξ² numerically. State whether Feller holds.
+
+  ## 4. CHANGE OF MEASURE (P → Q)
+  Girsanov: add wind-speed risk premium θ₁ and variance risk premium θ₂.
+  Under Q:  κ_V^Q = κ_V + θ₂ξ,   v̄^Q = κ_V v̄ / (κ_V + θ₂ξ)
+  Working assumption: θ₁ = θ₂ = 0  (no calibration, geographic mismatch
+  with Nordix per CLAUDE.md). P = Q for all computations below.
+
+  ## 5. CHARACTERISTIC FUNCTION
+  Log-char. function of W̃(T) given F_t (Heston 1993):
+    log φ(u; t,T) = iu·E + C(τ; u)·v̄ + D(τ; u)·V(t),   τ = T − t
+  where C, D satisfy Riccati ODEs. Write the ODEs and their closed-form
+  solution. Note: under θ = 0 the first moment recovers e₁′·exp(Aτ)·X(t).
+
+  ## 6. SEMI-ANALYTIC WIND FUTURES PRICE
+  F(t, T) = Λ(T) + σ_seasonal(T) · E^Q[W̃(T) | F_t]
+  E^Q[W̃(T)|F_t] = Im[φ(−i; t,T)] / 1   (first moment from char. fn.)
+  Under θ = 0: this equals e₁′·exp(Aτ)·X(t) — verify round-trip
+  consistency against Phase 4 conditional forecast table.
+
+  ## 7. VARIANCE TERM STRUCTURE
+  Var^Q[W̃(T)|F_t] as function of horizon τ. Compare:
+    (a) Piecewise-constant h approximation (Phase 4, Tol 1997):
+        Var = h(t₀)·σ²_seasonal(t₀) · ∫₀^τ g(s)² ds
+    (b) Full Heston term structure (numerical integration of Riccati)
+  Plot both. Save figure: phase5_B_sv_termstructure.png
+
+  ## 8. WHY MLE IS DEFERRED
+  Identification of (κ_V, v̄, ξ, ρ): requires intraday data (≥5-min) or
+  N >> 3,000 daily obs. At daily frequency, ξ/κ_V ratio is not separately
+  identified from the GARCH persistence α+β. Reference: ECMWF ERA5
+  hourly data as the designated upgrade path.
+
+  ## 9. SUMMARY
+  Formal SDE system, parameter correspondence table (GARCH proxy ↔ Heston),
+  Feller condition numerical result, round-trip consistency check.
+
+### Outputs
+  Figures only — no CSV outputs.
+  phase5_B_sv_termstructure.png  → reference_tex/Plots/
 
 ---
 
-## Phase 6 — Carr-Lee pricing framework
-Core reference: Carr & Lee (2009), "Volatility Derivatives",
+## Phase 6 — Carr-Lee Variance Swap Pricing
+
+### Scope and core reference
+Carr & Lee (2009), "Volatility Derivatives",
 Annual Review of Financial Economics 1:1–21. PDF in papers/.
-
 Synthetic instrument: wind electricity variance swap on German
-onshore wind production, with:
-  Floating leg = realised variance of daily wind production returns
-                 computed from Actual_generation_1/2.csv (SMARD)
-  Fair strike  = Track A (historical mean RV, actuarial, no θ needed)
-                 Track B (Carr-Lee Section 4 or Section 6 ATM approx,
-                 requires EEX options if available)
+onshore wind production. θ = 0 throughout (no calibration to Nordix).
 
-Power curve: P(v) ∝ v³ at 100m — no profile correction.
-Piecewise-constant h(t₀) for all closed-form pricing (Tol 1997).
-Three h scenarios per price (fan, not single number):
-  h = 0.414 (end-of-sample) | ≈0.52 winter / ≈0.76 summer | h = 1.0
-Synthetic producer: Nordfriesland, Schleswig-Holstein, Germany.
-Do NOT calibrate θ to real Nordix prices (geographic mismatch).
+### Hard constraints
+- Do NOT calibrate θ to real Nordix prices (geographic mismatch).
+- Piecewise-constant h(t₀) for all closed-form pricing (Tol 1997).
+- Three h scenarios per price (fan): h_t0 (Dataset B end-of-sample),
+  h_winter (DJF mean from Phase 3), h_summer (JJA mean from Phase 3),
+  h = 1.0 (Gaussian baseline). Do NOT hardcode Dataset A values (0.414).
+- Power curve: P(v) ∝ v³ at 100m — no profile correction.
+- SMARD file names use a HYPHEN: Day-ahead_prices_1.csv (not underscore).
+
+### Key formula (Track B under piecewise-constant h, Tol 1997)
+  K_var^B(h) = h × (1/T) ∫₀ᵀ σ²_seasonal(t) dt
+             = h × C0
+  because C1 and C2 Fourier terms integrate to zero over a full year.
+  C0 loaded from car4_parameters_phase4.csv.
+
+### Inputs consumed (reference_nb paths)
+  ../Phase_3/garch_h_series_phase3.csv       → h_winter, h_summer, h_t0
+  ../Phase_4/car4_parameters_phase4.csv      → h_t0, C0, NIG parameters
+  ../../data/Actual_generation_1.csv         → SMARD wind onshore MWh
+  ../../data/Actual_generation_2.csv
+  ../../data/Day-ahead_prices_1.csv          → German day-ahead €/MWh
+  ../../data/Day-ahead_prices_2.csv
+
+### SMARD parsing notes
+  Separator: semicolon. Encoding: UTF-8 BOM. Numbers: comma as thousands sep.
+  Dates: "Jan 1, 2015 12:00 AM" → parse with pd.to_datetime(dayfirst=False).
+  Wind onshore column: "Wind onshore [MWh] Calculated resolutions"
+  Price column merge rule: Germany/Luxembourg post 01/10/2018,
+                           DE/AT/LU pre 01/10/2018 (see SMARD section above).
+  Daily aggregation: generation = sum of 24 hourly values per day.
+                     price      = mean of 24 hourly values per day.
+  Drop days with >20% missing hourly observations.
+
+### Notebook structure (reference_nb/Phase_6/Phase_6.ipynb)
+
+  ## 1. CONFIGURATION AND DATA LOADING
+  Load all six input files. Print shape and date range of each.
+
+  ## 2. SMARD WIND GENERATION — DAILY SERIES
+  Parse, clean, resample hourly → daily. Handle zeros and missing.
+  Print: total obs, NaN count, mean/std of G_t [MWh/day].
+
+  ## 3. DAY-AHEAD ELECTRICITY PRICES — DAILY SERIES
+  Parse + merge DE/AT/LU | Germany/Luxembourg per the split date.
+  Align date index with generation series.
+  Plot: G_t and P_t time series (dual-axis). Save: phase6_B_smard_overview.png
+
+  ## 4. LOG-RETURNS AND REALISED VARIANCE (TRACK A)
+  r_t = log(G_t / G_{t-1}), set r_t = NaN if G_t = 0 or G_{t-1} = 0.
+  Daily RV: RV_t = r_t²
+  Rolling annual fair strike: K_var^A(t) = 252 × mean(RV, 252-day window)
+  Seasonal analysis: print DJF / MAM / JJA / SON means.
+  Plot: RV_t + rolling K_var^A. Save: phase6_B_rv_tracka.png
+
+  ## 5. MODEL-IMPLIED FAIR STRIKE (TRACK B)
+  Load h_series → compute h_winter (DJF mean), h_summer (JJA mean).
+  h_t0 from car4_parameters_phase4.csv.
+  Four h scenarios: h_t0, h_winter, h_summer, h=1.0.
+  K_var^B(h) = h × C0 for each scenario.
+  Note: θ = 0 → risk-neutral NIG adjustment equals 1; Track B reduces
+  to the piecewise-constant Tol (1997) formula.
+  Print comparison table: K_var^A vs K_var^B for each scenario.
+
+  ## 6. POWER CURVE LINKAGE
+  Conceptual: G(t) ∝ W(t)³ (Betz law, 100m hub height).
+  Delta-method: Var[G] ≈ (3c W̄²)² × Var[W].
+  Empirical: scatter G_t vs W_t³ (load germany_wind.csv), fit OLS,
+  report R² and proportionality constant. Motivates why CAR(4) wind
+  speed variance drives generation variance.
+
+  ## 7. MERIT-ORDER EFFECT
+  Scatter: daily G_t vs P_t. Rolling 90-day Pearson ρ(G, P).
+  Expected: negative correlation (high wind → low price).
+  Interpretation: wind variance swap as natural hedge for producers.
+
+  ## 8. SYNTHETIC VARIANCE SWAP — PAYOFF SIMULATION
+  For each year t in sample:
+    RV^annual_t = 252 × mean(RV_t over that calendar year)
+    Payoff_A = RV^annual_t − K_var^A
+    Payoff_B(h) = RV^annual_t − K_var^B(h)  for each h scenario
+  Distribution: histogram of payoffs. Left-tail (5th pct) = worst-case producer.
+  Fan chart: K_var^B fan vs time series of annual RV.
+  Save: phase6_B_payoff_fan.png
+
+  ## 9. COMPLETE SUMMARY TABLE
+  Rows: Dataset A (Track A only) | Dataset B (Track A + Track B × 4 scenarios)
+  Columns: K_var, payoff mean, payoff std, VaR₅%.
+  Print and save as variance_swap_summary_phase6.csv.
+
+  ## 10. SAVE OUTPUTS
+  variance_swap_phase6.csv:
+    columns: date, G_daily_MWh, price_EUR_MWh, log_return_G,
+             RV_daily, RV_rolling252, K_varA,
+             K_varB_ht0, K_varB_hwinter, K_varB_hsummer, K_varB_h1
+  smard_daily_phase6.csv:
+    columns: date, G_daily_MWh, price_EUR_MWh
+  variance_swap_summary_phase6.csv: summary table above.
+
+### Outputs — figures (reference_tex/Plots/, prefix phase6_B_)
+  phase6_B_smard_overview.png       → G_t and P_t dual-axis time series
+  phase6_B_rv_tracka.png            → daily RV + rolling K_var^A
+  phase6_B_power_curve.png          → scatter G_t vs W_t³ + OLS fit
+  phase6_B_merit_order.png          → scatter G_t vs P_t + rolling ρ
+  phase6_B_payoff_fan.png           → K_var^B fan + annual RV time series
 
 ---
 
@@ -139,8 +302,10 @@ File I/O uses relative paths from the notebook's location:
   Dataset B wind:          ../data/germany_wind.csv
   SMARD generation (raw):  ../data/Actual_generation_1.csv
                            ../data/Actual_generation_2.csv
-  SMARD prices (raw):      ../data/Day_ahead_prices_1.csv
-                           ../data/Day_ahead_prices_2.csv
+  SMARD prices (raw):      ../data/Day-ahead_prices_1.csv
+                           ../data/Day-ahead_prices_2.csv
 No magic numbers — use named constants at top of each cell.
-Figures: PNG, dpi=150, saved to ../latex/figures/.
+Figures: PNG, dpi=150.
+  benchmark_notebooks: FIG_PATH = "../../benchmark_latex/figures/"
+  reference_nb:        FIG_PATH = "../../reference_tex/Plots/"
 LaTeX style: match Phases 1–4 exactly (graybox, litbox, darkblue/midblue).
