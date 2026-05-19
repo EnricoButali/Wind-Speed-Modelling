@@ -197,55 +197,119 @@ The small excess kurtosis indicates that for daily wind anomalies, Gaussian nois
 
 \section{Summary Table: Phase 4 Complete Numerical Inventory}
 
-Table~\ref{tbl:phase4_summary} consolidates all Phase 4 outputs for reference in Phases 5 and 6.
+Phase 4 outputs are consolidated below in focused tables for reference in Phases 5 and 6.
+
+\subsection*{CAR(4) Continuous-Time Parameters and Stability}
 
 \begin{table}[ht]
 \centering
-\caption{Phase 4 Complete Numerical Summary}
-\label{tbl:phase4_summary}
+\caption{CAR(4) Parameters and Eigenvalues}
+\label{tbl:car4_params_eig}
 \small
-\begin{tabularx}{\textwidth}{l|cc}
+\begin{tabularx}{0.6\textwidth}{l|c}
 \toprule
-\textbf{Parameter or Quantity} & \textbf{Value} & \textbf{Units/Notes} \\
+\textbf{Parameter} & \textbf{Value} \\
 \midrule
-\multicolumn{3}{l}{\textbf{CAR(4) Continuous-Time Parameters}} \\
-$\alpha_1$ & $3.4676$ & Dominant mean-reversion \\
-$\alpha_2$ & $4.4789$ & \\
-$\alpha_3$ & $2.5228$ & \\
-$\alpha_4$ & $0.5188$ & \\
+$\alpha_1$ & $3.4676$ \\
+$\alpha_2$ & $4.4789$ \\
+$\alpha_3$ & $2.5228$ \\
+$\alpha_4$ & $0.5188$ \\
 \midrule
-\multicolumn{3}{l}{\textbf{Eigenvalues of $A$ (Stability Verification)}} \\
-$\lambda_1, \lambda_2$ & $-1.0730 \pm 0.2550i$ & Complex, oscillatory period $\approx 24.6$ days \\
-$\lambda_3$ & $-0.7614$ & Real, intermediate decay \\
-$\lambda_4$ (dominant) & $-0.5602$ & Real, slowest decay; HL $= 1.24$ days \\
-Stationarity & All $\mathbb{Re}(\lambda) < 0$ & ✓ CAR(4) is strictly stationary \\
+$\lambda_1, \lambda_2$ & $-1.0730 \pm 0.2550i$ \\
+$\lambda_3$ & $-0.7614$ \\
+$\lambda_4$ (dominant) & $-0.5602$ \\
+Stationarity & All $\mathbb{Re}(\lambda) < 0$ ✓ \\
+Mean-reversion HL & $1.24$ days \\
+Oscillatory period & $24.6$ days \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{GARCH(1,1) and Seasonal Volatility}
+
+\begin{table}[ht]
+\centering
+\caption{GARCH(1,1) Parameters (Phase 3) and Seasonal Fourier Coefficients (Phase 1)}
+\label{tbl:garch_seasonal}
+\small
+\begin{tabularx}{0.7\textwidth}{l|c|l}
+\toprule
+\textbf{Component} & \textbf{Value} & \textbf{Meaning} \\
 \midrule
-\multicolumn{3}{l}{\textbf{GARCH(1,1) Parameters (from Phase 3)}} \\
 $\omega$ & $0.013479$ & Baseline variance \\
 $\alpha$ & $0.005900$ & ARCH shock coefficient \\
 $\beta$ & $0.976181$ & GARCH persistence \\
-$\alpha + \beta$ & $0.982081$ & Stationarity; persistence \\
+$\alpha + \beta$ & $0.982081$ & Stationarity check \\
 $h(t_0)$ & $0.751100$ & Current conditional variance \\
 \midrule
-\multicolumn{3}{l}{\textbf{Seasonal Volatility (from Phase 1)}} \\
-$c_0$ & $1.162775$ & Fourier constant \\
-$c_1$ & $0.259329$ & Annual harmonic (amplitude) \\
-$c_2$ & $0.040767$ & Semi-annual harmonic \\
+$c_0$ & $1.162775$ & Seasonal constant \\
+$c_1$ & $0.259329$ & Annual amplitude \\
+$c_2$ & $0.040767$ & Semi-annual amplitude \\
 $\sigma^2_{\text{seasonal}}(t_0)$ & $1.462808$ & At end of sample \\
-$\sigma^2_{\text{total}}(t_0) = \sigma^2_{\text{seasonal}} \times h(t_0)$ & $1.098716$ & Piecewise-constant pricing input \\
+$\sigma^2_{\text{total}}(t_0)$ & $1.098716$ & Piecewise-constant pricing \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{NIG Distribution and Noise Characteristics}
+
+\begin{table}[ht]
+\centering
+\caption{Normal Inverse Gaussian (NIG) Parameter Estimates}
+\label{tbl:nig_summary}
+\small
+\begin{tabularx}{0.6\textwidth}{l|c}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
 \midrule
-\multicolumn{3}{l}{\textbf{NIG Distribution Parameters}} \\
-$\hat{\alpha}$ & $2649.5662$ & Shape; large $\alpha$ $\approx$ Gaussian \\
-$\hat{\delta}$ & $51.5162$ & Scale \\
-Excess kurtosis of $z(t)$ & $-0.2783$ & Slightly platykurtic \\
+$\hat{\alpha}$ (shape) & $2649.5662$ \\
+$\hat{\delta}$ (scale) & $51.5162$ \\
+Excess kurtosis & $-0.2783$ \\
+KS test, NIG & $D = 0.02418$ \\
+KS test, Normal & $D = 0.02424$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Current State and Forecast Precision}
+
+\begin{table}[ht]
+\centering
+\caption{Current State Vector and One-Day Forecast}
+\label{tbl:state_forecast}
+\small
+\begin{tabularx}{0.75\textwidth}{l|c|c}
+\toprule
+\textbf{Quantity} & \textbf{Value} & \textbf{Interpretation} \\
 \midrule
-\multicolumn{3}{l}{\textbf{Current State and Forecast}} \\
-$X(t_0) = [W(t_0), W(t_0-1), W(t_0-2), W(t_0-3)]^{\top}$ & $[1.379, 1.486, 0.438, -1.345]^{\top}$ & Standardised anomalies \\
-$\mathbb{E}[W(t_0+1)|F_{t_0}]$ & $2.8448$ & One-day forecast \\
-$\text{Std}[W(t_0+1)|F_{t_0}]$ & $0.0313$ & Forecasting precision \\
-\multicolumn{3}{l}{\textbf{Samuelson Effect}} \\
-Kernel monotonicity & Non-monotone & CAR(4) first local max $\approx 3.6$ days \\
-Implication & Violated & Longer-dated futures need not have higher volatility \\
+$W(t_0)$ & $1.3785$ & Current standardised anomaly \\
+$W(t_0-1)$ & $1.4862$ & \\
+$W(t_0-2)$ & $0.4380$ & State vector $X(t_0)$ \\
+$W(t_0-3)$ & $-1.3453$ & \\
+\midrule
+$\mathbb{E}[W(t_0+1)|F_{t_0}]$ & $2.8448$ & One-day ahead forecast \\
+$\text{Std}[W(t_0+1)|F_{t_0}]$ & $0.0313$ & Forecast precision \\
+$95\%$ CI & $[2.78, 2.91]$ & Narrow due to AR(1) dominance \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Samuelson Effect: Kernel Non-Monotonicity}
+
+\begin{table}[ht]
+\centering
+\caption{Volatility Kernel Properties}
+\label{tbl:kernel_effect}
+\small
+\begin{tabularx}{0.7\textwidth}{l|c}
+\toprule
+\textbf{Property} & \textbf{Value/Status} \\
+\midrule
+Kernel monotonicity & Non-monotone \\
+First local maximum & $u \approx 3.6$ days \\
+Samuelson effect & Violated \\
+Implication & Longer-dated futures need not have higher $\sigma$ \\
+Pricing impact & Non-standard term structures \\
 \bottomrule
 \end{tabularx}
 \end{table}
