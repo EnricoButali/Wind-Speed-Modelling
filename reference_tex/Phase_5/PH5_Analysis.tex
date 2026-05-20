@@ -36,9 +36,9 @@ Phase 3 established GARCH(1,1) as the appropriate discrete-time model for condit
 
 \textit{[Technical Note: The Feynman--Kač theorem links backward parabolic PDEs (e.g., the Black--Scholes PDE) to expectations under semimartingale dynamics. A GARCH path cannot satisfy this correspondence because discrete paths are not semimartingales: their quadratic variation is zero (they lack diffusion), so there is no PDE to solve.]}
 
-\textbf{(2) Semimartingale Requirement.} Girsanov's theorem---essential for measure changes from physical (P) to risk-neutral (Q)---requires volatility to be a semimartingale with its own driving Brownian motion. The GARCH h(t) is a deterministic function of past innovations; it lacks an independent Brownian motion component, so Girsanov's machinery does not apply.
+\textbf{(2) Semimartingale Requirement.} Formal measure changes from physical (P) to risk-neutral (Q)---as in continuous-time models---require volatility to be a semimartingale with its own driving Brownian motion. The GARCH h(t) is a deterministic function of past innovations; it lacks an independent Brownian motion component, so the machinery does not apply.
 
-\textit{[Technical Note: Under Girsanov, measure changes introduce drift adjustments $\theta_i$ (market price of risk) that shift Brownian motions and affect volatility dynamics. For GARCH, there is no separate ``volatility Brownian motion'' to transform; the framework breaks down.]}
+\textit{[Technical Note: Measure changes introduce drift adjustments $\theta_i$ (market price of risk) that shift Brownian motions and affect volatility dynamics. For GARCH, there is no separate ``volatility Brownian motion'' to transform; the framework breaks down. This is why semimartingale models (like Heston) are essential for derivatives pricing.]}
 
 \textbf{Remedy:} Embed h(t) into a CIR (Cox--Ingersoll--Ross, 1985) SDE for the variance process V(t):
 \begin{equation}
@@ -93,7 +93,7 @@ The Feller condition is:
 2 \kappa_V \bar{v} > \xi^2.
 \end{equation}
 
-\textit{[Technical Note: The Feller condition arises from the boundary behaviour of square-root diffusions. At V=0, the drift term $\kappa_V \bar{v}$ pushes variance upward (away from zero), while the diffusion term $\xi\sqrt{V}$ vanishes (degenerate). The inequality ensures the drift dominates: if violated, variance can hit zero and remain there (absorbing boundary). Feller (1951) proved: condition holds $\Leftrightarrow$ 0 is unattainable.]}
+\textit{[Technical Note: The Feller condition arises from the boundary behaviour of square-root diffusions. At V=0, the drift term $\kappa_V \bar{v}$ pushes variance upward (away from zero), while the diffusion term $\xi\sqrt{V}$ vanishes (degenerate). The inequality ensures the drift dominates: if violated, variance can hit zero and remain there (absorbing boundary). When the condition holds, the boundary at 0 is unattainable.]}}
 
 \subsection{GARCH Proxy Mapping}
 
@@ -137,7 +137,7 @@ The Feller condition holds with a comfortable 28.1× margin. This means V(t) wil
 
 \section{Remark on Change of Measure: Why P = Q}
 
-Under formal Girsanov's theorem, a measure change from physical (P) to risk-neutral (Q) introduces market prices of risk $\theta_1$ and $\theta_2$ that shift the drifts:
+Formally, a measure change from physical (P) to risk-neutral (Q) introduces market prices of risk $\theta_1$ and $\theta_2$ that shift the drifts:
 \begin{align}
 \mathrm{d}B_1^Q &= \mathrm{d}B_1^P + \theta_1 \, \mathrm{d}t, \\
 \mathrm{d}B_2^Q &= \mathrm{d}B_2^P + \theta_2 \, \mathrm{d}t.
@@ -408,23 +408,17 @@ Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity
 \bibitem{Heston:1993}
 Heston, S. L. (1993). A closed-form solution for options with stochastic volatility with applications to bond and currency options. \textit{Review of Financial Studies}, 6(2), 327--343.
 
-\bibitem{CoxIngersollRoss:1985}
-Cox, J. C., Ingersoll, J. E., Jr., \& Ross, S. A. (1985). A theory of the term structure of interest rates. \textit{Econometrica}, 53(2), 385--407.
-
 \bibitem{Schwartz:1997}
 Schwartz, E. S. (1997). The stochastic behavior of commodity prices: Implications for valuation and hedging. \textit{Journal of Finance}, 52(3), 923--973.
 
 \bibitem{Tol:1997}
 Tol, R. S. J. (1997). On the autoregressive modelling of stochastic hourly wind speed series. \textit{Journal of Wind Engineering and Industrial Aerodynamics}, 68(1), 1--13.
 
-\bibitem{SaltyteBenth:2008}
-Šaltytė Benth, J., \& Benth, F. E. (2008). Stochastic modelling of temperature variations with a view towards weather derivatives. \textit{Applied Mathematical Finance}, 15(5--6), 505--525.
+\bibitem{Brockwell:2005}
+Brockwell, P. J., \& Marquardt, T. (2005). Lévy-driven and fractionally integrated ARMA processes with continuous time parameter. \textit{Statistica Sinica}, 15(3), 477--494.
 
-\bibitem{Feller:1951}
-Feller, W. (1951). Two singular diffusion problems. \textit{Annals of Mathematics}, 54(1), 173--182.
-
-\bibitem{Girsanov:1960}
-Girsanov, I. V. (1960). On transforming a certain class of stochastic processes by absolutely continuous substitution of measures. \textit{Theory of Probability \& Its Applications}, 5(3), 285--301.
+\bibitem{Benth:2009}
+Benth, F. E., \& Šaltytė Benth, J. (2009). Dynamic pricing of wind futures. \textit{Energy Economics}, 31(1), 16--24.
 
 \end{thebibliography}
 
