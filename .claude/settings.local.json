@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\andre\\\\Desktop\\\\VS_RASHIP\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(grep -E '\\\\.csv$')",
+      "Bash(ls -la \"C:\\\\Users\\\\andre\\\\Desktop\\\\VS_RASHIP\\\\\")",
+      "Read(//c/Users/andre/Desktop/**)"
+    ]
+  }
+}
