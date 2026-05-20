@@ -331,17 +331,17 @@ Table~\ref{tbl:mle_feasibility} summarises the issue:
 \caption{MLE Identifiability at Daily vs.\ Hourly Frequency}
 \label{tbl:mle_feasibility}
 \small
-\begin{tabularx}{\textwidth}{l|c|c|c}
+\begin{tabularx}{\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
 \toprule
 \textbf{Statistic} & \textbf{Daily (Current)} & \textbf{Hourly (Proposed)} & \textbf{Interpretation} \\
 \midrule
-Sampling interval $\Delta t$ & 1 day & 1 hour & \\
-Half-life $1/\kappa_V$ & 56 days & 56 days & (same physical parameter) \\
-Ratio $1/(\kappa_V \Delta t)$ & 56 & 1,344 & Higher ratio $\Rightarrow$ more observations per decay \\
-Obs.\ per decade & 10/0.0179 $\approx$ 65 & 240/0.0179 $\approx$ 1,563 & Hourly: 24× more information \\
-Expected $\xi/\kappa_V$ std.\ error & Large (24× times higher) & $\sim 5$--$10\%$ & Hourly enables reliable estimation \\
+Sampling interval $\Delta t$ & 1 day & 1 hour & Same units \\
+Half-life $1/\kappa_V$ & 56 days & 56 days & Same physical parameter \\
+Ratio $1/(\kappa_V \Delta t)$ & 56 & 1,344 & More observations per mean-reversion cycle \\
+Observations per decade & $\approx 65$ & $\approx 1,563$ & Hourly: 24× more information \\
+Expected $\xi/\kappa_V$ std.\ error & Large (24× higher) & $\sim 5$--$10\%$ & Enables reliable estimation \\
 \midrule
-\textbf{MLE Feasibility} & \textbf{Marginal} & \textbf{Excellent} & \\
+\textbf{MLE Feasibility} & \textbf{Marginal} & \textbf{Excellent} & Feasibility verdict \\
 \bottomrule
 \end{tabularx}
 \end{table}
