@@ -6,7 +6,8 @@
       "Bash(Sort-Object FullName)",
       "Bash(grep -E '\\\\.csv$')",
       "Bash(ls -la \"C:\\\\Users\\\\andre\\\\Desktop\\\\VS_RASHIP\\\\\")",
-      "Read(//c/Users/andre/Desktop/**)"
+      "Read(//c/Users/andre/Desktop/**)",
+      "PowerShell(Get-Command python3, py, conda 2>$null)"
     ]
   }
 }
