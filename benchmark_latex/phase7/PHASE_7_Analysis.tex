@@ -1,0 +1,338 @@
+\documentclass[11pt, a4paper, twoside]{article}
+
+\usepackage{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{booktabs, tabularx, array}
+\usepackage{graphicx, caption, subcaption}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage[numbers, square]{natbib}
+
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, filecolor=blue, urlcolor=blue}
+
+\definecolor{darkblue}{HTML}{003366}
+\definecolor{midblue}{HTML}{0066CC}
+\definecolor{graybox}{HTML}{F5F5F5}
+\definecolor{technote}{HTML}{1a3a5c}
+
+\title{\textbf{Phase 7: Validation and Value of Information \\ Cross-Dataset Model Performance and Hedging Effectiveness}}
+\author{Dataset A --- Bologna 10\,m Proxy, 2015--2018}
+\date{2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Phase 7 validates the wind speed forecasting and derivatives pricing framework across all five competing models through rigorous hypothesis testing and quantifies the economic cost of using a geographic proxy (Bologna 10\,m) instead of an aligned dataset (Nordfriesland 100\,m, Dataset B). Diebold-Mariano forecast tests confirm that AR(4) significantly outperforms the persistence benchmark (RMSE = 0.7807 vs 0.8876, $DM = 8.28$, $p < 0.001$), with a 12\% improvement. CAR(4) continuous-time embedding achieves the same 1-step mean forecast but enables options pricing and variance swap valuation. GARCH(1,1) diagnostics (Ljung-Box test on squared residuals, ARCH-LM test) confirm adequacy of conditional heteroskedasticity modeling. Value of Information (VoI) analysis reveals a catastrophic 93.8\% mispricing in model-implied variance swap fair strikes when using the Bologna proxy ($K_{\text{var}}^B(A) = 0.0544$ vs $0.8735$ for aligned Dataset B), driven by Bologna's 8.8× lower seasonal volatility ($C_0$). Height correction (Hellmann exponent 2/7, scaling factor 1.93) reduces the mispricing to 88\% but does not resolve the fundamental geographic misalignment. CAWS (Cumulative Accumulated Wind Speed) hedging simulation demonstrates the practical value of left-tail risk management, with 5th-percentile worst-case loss of $-0.293$ m/s. Phase 7 establishes the methodology validation framework for Phase 7 Dataset B and quantifies the premium justifiable for upgrading from proxy to aligned data.
+\end{abstract}
+
+\section{Introduction: Validation Framework and Value of Information}
+
+The complete wind speed modeling pipeline spans Phases 1--6, building from empirical distribution analysis (Phase 1) through ARMA/GARCH dynamics (Phases 2--3) to continuous-time derivatives pricing (Phases 5--6). Phase 7 serves two critical functions:
+
+\begin{enumerate}
+\item **Forecast Validation**: Rigorous statistical testing of competing models' predictive accuracy at multiple horizons, using procedures robust to non-normal residuals and heteroskedasticity.
+
+\item **Derivatives Pricing Validation**: Quantifying the economic cost of misspecification (geographic proxy vs. aligned data) through the Value of Information (VoI) metric---the mispricing that a practitioner would avoid by upgrading data sources.
+\end{enumerate}
+
+\textit{[Technical Note: Value of Information is an economic concept from decision theory: the expected improvement in decision quality (utility) from obtaining perfect information about an uncertain parameter. In derivatives pricing, VoI quantifies the expected loss from pricing with a biased model (e.g., a proxy dataset) versus using the true underlying distribution. For wind derivatives, this is the gap between the model-implied fair strikes using Bologna (proxy) versus Nordfriesland (aligned) data. The gap reflects both model error and data mismatch.]}
+
+\section{Diebold-Mariano Forecast Comparison: Model Hierarchy}
+
+\subsection{Methodology: DM Test with Harvey et al. Small-Sample Correction}
+
+The Diebold-Mariano (DM) test compares the predictive accuracy of two competing forecasts without restricting them to be nested. For two models producing 1-step-ahead forecast errors $e_{1,t}$ and $e_{2,t}$, the DM statistic is:
+\begin{equation}
+DM = \frac{\bar{d}}{\sqrt{\widehat{\text{Var}(d)}}},
+\end{equation}
+where $d_t = e_{1,t}^2 - e_{2,t}^2$ is the loss differential (squared error comparison) and $\bar{d}$ is the sample mean.
+
+For small samples, Harvey, Leybourne, and Newbold (1997) apply a correction:
+\begin{equation}
+DM_{\text{corrected}} = DM_{\text{raw}} \times \sqrt{\frac{N-1}{N}},
+\end{equation}
+where $N$ is the sample size. We compare all models against the persistence benchmark (random walk) and test $H_0$: predictive accuracy is equal.
+
+\textit{[Technical Note: The DM test is powerful against one-step-ahead forecasts even when residuals are non-normal or heteroskedastic (it tests squared errors, which are more robust). However, it loses power at longer horizons because forecast errors become dependent. For wind speed, the ACF of $\tilde{W}(t)$ decays quickly (AR(4) model), so 1-step tests are most reliable.]}
+
+\subsection{Results: Five Competing Models}
+
+We compare:
+\begin{enumerate}
+\item \textbf{Persistence}: $\hat{\tilde{W}}(t) = \tilde{W}(t-1)$ (no forecasting skill)
+\item \textbf{AR(4)}: $\hat{\tilde{W}}(t) = \sum_{j=1}^4 \beta_j \tilde{W}(t-j)$ (Phase 2, fixed coefficients)
+\item \textbf{AR(4)+GARCH}: Mean forecast from AR(4), with conditional variance scaling
+\item \textbf{CAR(4)+Gaussian}: Euler discretization of CAR(4) SDE; 1-step mean equals AR(4)
+\item \textbf{CAR(4)+NIG}: CAR(4) with Normal-Inverse-Gaussian noise; residuals normalized by NIG scale $\delta$
+\end{enumerate}
+
+\begin{table}[ht]
+\centering
+\caption{Diebold-Mariano Forecast Test Results (Dataset A, 1-step ahead)}
+\label{tbl:dm_tests}
+\small
+\begin{tabularx}{0.9\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Model} & \textbf{RMSE} & \textbf{DM Stat.} & \textbf{p-value} & \textbf{Reject H\textsubscript{0} (5\%)} \\
+\midrule
+Persistence (benchmark) & 0.8876 & --- & --- & --- \\
+AR(4) & 0.7807 & 8.280 & $< 0.0001$ & Yes \\
+AR(4)+GARCH & 1.0012 & -6.977 & $< 0.0001$ & Yes \\
+CAR(4)+Gaussian & 0.7807 & 8.280 & $< 0.0001$ & Yes \\
+CAR(4)+NIG & 0.3741 & 21.096 & $< 0.0001$ & Yes \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Key Findings}:
+
+1. **AR(4) vs Persistence**: RMSE improves by 12.0\% ($0.7807$ vs $0.8876$), and the DM statistic ($8.28$) is highly significant, rejecting the null of equal accuracy. AR(4) incorporates valuable lagged information.
+
+2. **AR(4)+GARCH degrades performance**: RMSE increases to 1.0012, worse than persistence. This occurs because the conditional variance term $h(t)$ scales the point forecast, introducing noise that worsens 1-step-ahead accuracy. While GARCH improves interval forecasts and option pricing, it does not improve point estimation at daily frequency.
+
+3. **CAR(4)+Gaussian equals AR(4)**: By Euler discretization equivalence, the 1-step mean forecast from CAR(4) is identical to AR(4), so RMSE and DM statistics are equal. However, CAR(4) enables continuous-time pricing (options, variance swaps) in later phases.
+
+4. **CAR(4)+NIG**: RMSE = 0.3741 appears to dramatically improve accuracy. However, this is misleading: NIG normalization divides residuals by $\delta = 2.087$, mechanically reducing squared errors without changing point forecasts. The normalized residuals test distributional assumptions but do not improve prediction.
+
+\textit{[Technical Note: A common error is interpreting normalized residuals as improved forecasts. The CAR(4)+NIG RMSE reflects the rescaling $e / \delta$, not true predictive improvement. The actual point forecasts are identical to AR(4). This model is valuable for assessing tail risk and option pricing, but not for point forecasting. The AR(4) RMSE of 0.7807 is the benchmark for 1-step accuracy.]}
+
+\section{GARCH Volatility Diagnostics}
+
+\subsection{Ljung-Box and ARCH-LM Tests}
+
+To validate that GARCH(1,1) has adequately captured conditional heteroskedasticity, we test whether standardized residuals $z_t = \hat{\eta}_t / \sqrt{h_t}$ are white noise:
+
+**Ljung-Box Test** on $z_t^2$ (testing for remaining ARCH effects):
+\begin{equation}
+LB(p) = n(n+2) \sum_{k=1}^{p} \frac{\hat{\rho}_k^2}{n-k} \sim \chi^2_p.
+\end{equation}
+
+**ARCH-LM Test** on squared residuals (Lagrange multiplier specification test):
+\begin{equation}
+\text{LM} = nR^2 \sim \chi^2_q,
+\end{equation}
+where $R^2$ is from regressing $z_t^2$ on $z_{t-1}^2, \ldots, z_{t-q}^2$.
+
+\textbf{Results (Dataset A)}:
+\begin{itemize}
+\item LB test on $z_t$ (lag 5):  p-value = 0.58 (no serial correlation)
+\item LB test on $z_t$ (lag 10): p-value = 0.64
+\item LB test on $z_t^2$ (lag 5):  p-value = 0.13 (no remaining ARCH)
+\item LB test on $z_t^2$ (lag 20): p-value = 0.21
+\item ARCH-LM (lag 5):  p-value = 0.42 (no heteroskedasticity)
+\end{itemize}
+
+All tests show $p > 0.05$, indicating GARCH(1,1) has adequately removed conditional heteroskedasticity. The standardized residuals $z_t$ are approximately white noise.
+
+\textit{[Technical Note: A large p-value (>0.05) means we fail to reject the null that residuals are white noise---this is the desired outcome. If LB(z_t^2, lag 20) had $p < 0.05$, it would indicate GARCH has not fully captured volatility clustering, suggesting a higher-order model (GARCH(2,1) or TARCH) might be necessary. Our result validates GARCH(1,1) as adequate for Dataset A.]}
+
+\section{Value of Information: Dataset A vs Dataset B}
+
+\subsection{Geographic Misalignment and Height Correction}
+
+The fundamental issue with Dataset A (Bologna 10\,m proxy) is that it does not align with the German wind market being hedged. Two corrections can be applied:
+
+1. **Raw comparison**: Direct comparison of K_var^B values without adjustment
+2. **Height correction**: Scaling variance from 10\,m to 100\,m using the wind power law
+
+The power law profile predicts wind speed scales with height as:
+\begin{equation}
+v(h) = v(h_0) \left( \frac{h}{h_0} \right)^{\alpha},
+\end{equation}
+where $\alpha \approx 1/7$ (Hellmann exponent) for neutral conditions. Since variance scales as velocity squared:
+\begin{equation}
+\text{Var}(h) = \text{Var}(h_0) \left( \frac{h}{h_0} \right)^{2\alpha} = \text{Var}(h_0) \left( \frac{h}{h_0} \right)^{2/7}.
+\end{equation}
+
+For $h_0 = 10$\,m and $h = 100$\,m:
+\begin{equation}
+\text{correction factor} = \left( \frac{100}{10} \right)^{2/7} = 10^{2/7} = 1.9307.
+\end{equation}
+
+\textit{[Technical Note: The Hellmann exponent $\alpha = 1/7$ is empirical (measured from meteorological profiles), not theoretical. It varies with surface roughness and stability (more irregular terrain → larger $\alpha$; stable air → smaller $\alpha$). For offshore wind (smooth ocean surface), $\alpha \approx 1/10$, giving a factor $10^{2/10} = 1.585$. We use 1/7 for coastal Germany, a reasonable middle ground.]}
+
+\subsection{Mispricing Quantification}
+
+\begin{table}[ht]
+\centering
+\caption{Value of Information: Fair Strike Comparison}
+\label{tbl:voi_strikes}
+\small
+\begin{tabularx}{0.85\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Dataset / Scenario} & \textbf{K\_var\^B} & \textbf{vs Dataset B} & \textbf{Interpretation} \\
+\midrule
+Dataset A (raw, $h_{t_0}=0.4137$) & 0.0544 & -93.8\% & Massive underpricing \\
+Dataset A (height-corrected, 1.93×) & 0.1049 & -88.0\% & Still severely biased \\
+Dataset B anchor ($h_{t_0}=0.7511$) & 0.8735 & (reference) & Aligned, reliable \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Root Causes of Mispricing}:
+
+The formula $K_{\text{var}}^B(h) = h \times C_0$ decomposes the gap:
+\begin{equation}
+\frac{K_{\text{var}}^B(B)}{K_{\text{var}}^B(A)} = \frac{h_{t_0,B}}{h_{t_0,A}} \times \frac{C_{0,B}}{C_{0,A}} = \frac{0.7511}{0.4137} \times \frac{1.163}{0.13138} = 1.815 \times 8.846 \approx 16.1.
+\end{equation}
+
+The dominant driver is the Fourier constant: $C_{0,B} / C_{0,A} = 8.846$. This reflects that Bologna's seasonal wind volatility (as captured by the Fourier decomposition in Phase 1) is approximately 1/9th of Nordfriesland's seasonal volatility at 100\,m. The secondary driver is $h_{t_0,B} / h_{t_0,A} = 1.815$: Nordfriesland's GARCH-estimated conditional volatility is nearly twice as high as Bologna's.
+
+\textit{[Technical Note: The $C_0$ gap (9×) is not primarily a height effect, but a regional climate difference. Nordfriesland is in Germany's high-wind corridor (North Sea coast, Atlantic frontal systems). Bologna is in the Mediterranean, with lower mean wind and seasonal variation. Height correction accounts for typical meteorological effects, but cannot eliminate regional differences in weather patterns.]}
+
+\section{CAWS Hedging Simulation: Practical Wind Risk Management}
+
+\subsection{CAWS Definition and Fair Strike}
+
+Cumulative Accumulated Wind Speed (CAWS) is a normalized rolling annual mean:
+\begin{equation}
+\text{CAWS}_t = \frac{1}{252} \sum_{s=t-251}^{t} w_s,
+\end{equation}
+where $w_s$ is the daily mean wind speed (m/s). This serves as a proxy for expected annual generation (which scales as $\text{wind speed}^3$ for turbines, but the rolling mean is more tractable for analytics).
+
+The fair strike for a CAWS swap is the unconditional mean:
+\begin{equation}
+K_{\text{CAWS}} = \mathbb{E}[\text{CAWS}_t] = 2.4644 \text{ m/s}.
+\end{equation}
+
+A producer who buys a CAWS swap at this strike receives payoff:
+\begin{equation}
+\text{Payoff}_t = K_{\text{CAWS}} - \text{CAWS}_t.
+\end{equation}
+
+When wind is below the fair strike (low wind periods), payoff is positive, offsetting low generation revenue. This provides natural hedging for wind producers facing left-tail revenue risk.
+
+\subsection{P\&L Distribution and Risk Metrics}
+
+\begin{table}[ht]
+\centering
+\caption{CAWS Hedging Summary (Producer Perspective)}
+\label{tbl:caws_summary}
+\small
+\begin{tabularx}{0.7\textwidth}{l >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Fair strike $K_{\text{CAWS}}$ & 2.4644 m/s \\
+CAWS standard deviation & 0.2013 m/s \\
+Mean payoff (zero by construction) & 0.0000 m/s \\
+Sharpe ratio & --- (zero mean, no alpha) \\
+5th percentile (VaR$_{5\%}$) & -0.2928 m/s \\
+Conditional VaR$_{5\%}$ (CVaR) & -0.3031 m/s \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Interpretation}:
+
+1. **Fair strike**: At $K_{\text{CAWS}} = 2.46$ m/s, the expected payoff is zero (by definition). A producer selling the swap receives this strike in exchange for bearing the volatility risk.
+
+2. **Left-tail hedging**: In the worst 5\% of outcomes (5th percentile), CAWS falls 0.293 m/s below the fair strike, generating a loss of $-0.293$ m/s for the hedger. This represents a very bad year for wind (but occurs with 5\% probability). The CVaR of $-0.303$ is the average loss in the worst 5\% tail, providing an even more pessimistic estimate.
+
+3. **Practical value**: For a 1 GW wind farm with output elasticity 3 (cubic power curve), a 0.3 m/s reduction in CAWS implies roughly 14-16\% loss in annual generation ($\approx 300$ GWh reduction on ~2,000 GWh annual output for a 1 GW farm at reasonable capacity factors). The hedging premium (difference between true fair strike and what a producer would pay to reduce left-tail risk) can be substantial.
+
+\textit{[Technical Note: CAWS hedging differs from variance swaps: variance swaps hedge volatility and tail risk across the entire distribution, while CAWS hedges specifically the left-tail (low wind) risk. A producer might use CAWS swaps as a first layer (protecting against catastrophic low-wind years) and variance swaps as a second layer (protecting against volatile years). Combined, they provide comprehensive wind revenue protection.]}
+
+\section{Forecast Error Distribution: Normality and Tail Risk}
+
+\subsection{Jarque-Bera Normality Tests}
+
+For each model's 1-step-ahead residuals, we test normality:
+\begin{equation}
+JB = n \left( \frac{S^2}{6} + \frac{(K-3)^2}{24} \right) \sim \chi^2_2,
+\end{equation}
+where $S$ is skewness and $K$ is kurtosis.
+
+\begin{table}[ht]
+\centering
+\caption{Jarque-Bera Normality Tests (Dataset A, 1-step residuals)}
+\label{tbl:jb_tests}
+\small
+\begin{tabularx}{0.75\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Model} & \textbf{JB Stat} & \textbf{p-value} & \textbf{Normal (5\%)} \\
+\midrule
+Persistence & 127.4 & $<0.0001$ & No \\
+AR(4) & 108.2 & $<0.0001$ & No \\
+CAR(4)+Gaussian & 108.2 & $<0.0001$ & No \\
+CAR(4)+NIG & 3.7 & 0.1596 & Yes \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Key Results}:
+
+1. **Raw residuals are non-normal**: Both Persistence and AR(4) residuals exhibit excess kurtosis (heavy tails), failing the normality test.
+
+2. **NIG normalization succeeds**: Dividing AR(4) residuals by the NIG scale parameter $\delta = 2.087$ yields residuals with JB p-value = 0.160, failing to reject normality. This suggests that NIG captures the heavy tails of wind speed innovations better than a Gaussian.
+
+3. **Implication for options pricing**: Option prices depend on tail probabilities. Using Gaussian distributions (implicit in Black-Scholes) underestimates the cost of out-of-the-money options (overestimates OTM probability). NIG-adjusted pricing would correct this bias, particularly for far-OTM calls/puts on wind speed.
+
+\textit{[Technical Note: The NIG distribution has two tails parameters: $\alpha$ (tail heaviness) and $\beta$ (skewness). Dataset A anchors from Phase 4 give $\alpha = 4.374$, $\beta = 0$ (symmetric). The $\delta = 2.087$ is the scale. This distribution fits heavy-tailed wind residuals well and is used in exotic options pricing (Barndorff-Nielsen & Shephard 2001).]}
+
+\section{Synthesis: Dataset A as Methodological Benchmark}
+
+Phase 7 (Dataset A) establishes the methodological framework that Phase 7 (Dataset B) replicates and extends:
+
+\begin{table}[ht]
+\centering
+\caption{Phase 7 Validation Framework Summary (Dataset A)}
+\label{tbl:phase7_summary}
+\small
+\begin{tabularx}{0.95\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Component} & \textbf{Finding} & \textbf{Implication} \\
+\midrule
+\textbf{Forecast Accuracy} & AR(4) RMSE = 0.7807; DM = 8.28, p $<$ 0.001 & Significant improvement over persistence \\
+\textbf{Conditional Variance} & GARCH(1,1) passes diagnostics (LB, ARCH-LM all p $>$ 0.05) & Model is adequate; higher order unnecessary \\
+\textbf{Continuous-Time Embedding} & CAR(4)+Gaussian maintains AR(4) point forecast & 1-step accuracy unchanged; enables pricing \\
+\textbf{Tail Risk Modeling} & CAR(4)+NIG residuals approximately normal (JB p = 0.16) & NIG distribution fits heavy tails; use for options \\
+\textbf{Hedging Effectiveness} & CAWS VaR$_{5\%}$ = -0.293 m/s (worst 5\% case) & Hedging pool is economically significant \\
+\textbf{Pricing Accuracy} & VoI (raw) = 93.8\%; VoI (height-corr.) = 88.0\% & Geographic proxy is inadequate; upgrade needed \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Key Takeaways}:
+
+1. **Forecast hierarchy is validated**: AR(4) is the reliable 1-step benchmark. CAR(4) preserves accuracy while enabling derivatives pricing. NIG residuals provide tail-risk insight.
+
+2. **GARCH is sufficient**: Diagnostics confirm GARCH(1,1) has adequately modeled conditional volatility. Residuals are white noise.
+
+3. **Geographic mismatch dominates pricing error**: The 88--94\% mispricing is driven by Bologna's low seasonal volatility (C_0), not by model misspecification. This cannot be fixed with taller anemometers at the same location.
+
+4. **Dataset upgrade is economically justified**: For a 100 MW wind farm generating €50M in annual revenue, an 88\% underpricing of variance swap strikes translates to potential losses in the hundreds of millions over a 5--10 year contract if the producer hedges using the proxy-derived fair strike.
+
+5. **Phase 7 Dataset B will show**: Replicating this validation framework on Dataset B (Nordfriesland ERA5, 100\,m, 10-year) will serve as both a confirmation and a revelation: same methodology, better data, should show improvement in pricing accuracy and elimination of geographic bias.
+
+\section*{References}
+
+\begin{thebibliography}{99}
+
+\bibitem{DM:1995}
+Diebold, F. X., \& Mariano, R. S. (1995). Comparing predictive accuracy. \textit{Journal of Business \& Economic Statistics}, 13(3), 134--144.
+
+\bibitem{HarveyEtal:1997}
+Harvey, D. I., Leybourne, S. J., \& Newbold, P. (1997). Testing the equality of prediction mean squared errors. \textit{International Journal of Forecasting}, 13(2), 281--291.
+
+\bibitem{Bollerslev:1986}
+Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. \textit{Journal of Econometrics}, 31(3), 307--327.
+
+\bibitem{BarndorffNielsenShephard:2001}
+Barndorff-Nielsen, O. E., \& Shephard, N. (2001). Non-Gaussian Ornstein-Uhlenbeck-based models and some of their uses in financial economics. \textit{Journal of the Royal Statistical Society: Series B}, 63(2), 167--241.
+
+\bibitem{Benth:2009}
+Benth, F. E., \& Šaltytė Benth, J. (2009). Dynamic pricing of wind futures. \textit{Energy Economics}, 31(1), 16--24.
+
+\bibitem{Hellmann:1917}
+Hellmann, G. (1917). Über die Bewegung der Luft in den untersten Metern der Atmosphäre. \textit{Meteorologische Zeitschrift}, 34, 273--285.
+
+\bibitem{Tol:1997}
+Tol, R. S. J. (1997). On the autoregressive modelling of stochastic hourly wind speed series. \textit{Journal of Wind Engineering and Industrial Aerodynamics}, 68(1), 1--13.
+
+\end{thebibliography}
+
+\end{document}
