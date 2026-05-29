@@ -7,7 +7,8 @@
       "Bash(grep -E '\\\\.csv$')",
       "Bash(ls -la \"C:\\\\Users\\\\andre\\\\Desktop\\\\VS_RASHIP\\\\\")",
       "Read(//c/Users/andre/Desktop/**)",
-      "PowerShell(Get-Command python3, py, conda 2>$null)"
+      "PowerShell(Get-Command python3, py, conda 2>$null)",
+      "PowerShell(Get-Content \"c:\\\\Users\\\\andre\\\\Desktop\\\\VS_RASHIP\\\\data\\\\Day-ahead_prices_1.csv\" -TotalCount 4 | ForEach-Object { $_ })"
     ]
   }
 }
