@@ -158,19 +158,22 @@ For $h_0 = 10$\,m and $h = 100$\,m:
 
 \begin{table}[ht]
 \centering
-\caption{Value of Information: Fair Strike Comparison}
+\caption{Value of Information: Fair Strike Comparison and Empirical Distance}
 \label{tbl:voi_strikes}
 \small
-\begin{tabularx}{0.85\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\begin{tabularx}{\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
 \toprule
-\textbf{Dataset / Scenario} & \textbf{K\_var\^B} & \textbf{vs Dataset B} & \textbf{Interpretation} \\
+\textbf{Scenario} & \textbf{$K_{\text{var}}^B$} & \textbf{$K_{\text{var}}^{B,\text{scaled}}$} & \textbf{$|K^A - K^{B,\text{scaled}}|$} & \textbf{Interp.} \\
 \midrule
-Dataset A (raw, $h_{t_0}=0.4137$) & 0.0544 & -93.8\% & Massive underpricing \\
-Dataset A (height-corrected, 1.93×) & 0.1049 & -88.0\% & Still severely biased \\
-Dataset B anchor ($h_{t_0}=0.7511$) & 0.8735 & (reference) & Aligned, reliable \\
+Dataset A (raw)            & 0.0544 & see below & --- & Proxy, unscaled \\
+Dataset A (height-corr.)   & 0.1049 & ---       & --- & Height adjusted \\
+Dataset A (delta-scaled)   & ---    & $\approx 0.080$ & $\approx 113.9$ & Unit-reconciled \\
+Dataset B anchor           & 0.8735 & ---       & --- & Reference \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\textit{[Note: $K_{\text{var}}^{B,\text{scaled}} = (9/\bar{W}^2) \times K_{\text{var}}^B$ places Track B in the same units as Track A (log-return variance of generation). The empirical distance $|K_{\text{var}}^A - K_{\text{var}}^{B,\text{scaled}}|$ quantifies the absolute gap between the market-implied and model-implied strikes on the same axis. The large distance ($\approx 114$) confirms that geographic mismatch, not unit mis-specification, is the dominant source of error.]}
 
 \textbf{Root Causes of Mispricing}:
 
@@ -191,50 +194,53 @@ Cumulative Accumulated Wind Speed (CAWS) is a normalized rolling annual mean:
 \begin{equation}
 \text{CAWS}_t = \frac{1}{252} \sum_{s=t-251}^{t} w_s,
 \end{equation}
-where $w_s$ is the daily mean wind speed (m/s). This serves as a proxy for expected annual generation (which scales as $\text{wind speed}^3$ for turbines, but the rolling mean is more tractable for analytics).
+where $w_s$ is the daily mean wind speed (m/s). Normalisation by 252 ensures comparability across heights (Dataset A: $\bar{W} \approx 2.47$~m/s at 10~m; Dataset B: $\bar{W} \approx 8$~m/s at 100~m).
 
 The fair strike for a CAWS swap is the unconditional mean:
 \begin{equation}
-K_{\text{CAWS}} = \mathbb{E}[\text{CAWS}_t] = 2.4644 \text{ m/s}.
+K_{\text{CAWS}} = \mathbb{E}[\text{CAWS}_t].
 \end{equation}
 
-A producer who buys a CAWS swap at this strike receives payoff:
-\begin{equation}
-\text{Payoff}_t = K_{\text{CAWS}} - \text{CAWS}_t.
-\end{equation}
-
-When wind is below the fair strike (low wind periods), payoff is positive, offsetting low generation revenue. This provides natural hedging for wind producers facing left-tail revenue risk.
+A producer who buys a CAWS swap at this strike receives payoff $\text{Payoff}_t = K_{\text{CAWS}} - \text{CAWS}_t$, positive when wind is below the fair strike.
 
 \subsection{P\&L Distribution and Risk Metrics}
 
+\textit{[Note on methodology: distribution metrics (Sharpe ratio, VaR$_{5\%}$, CVaR$_{5\%}$) are computed on \textbf{non-overlapping annual observations} — one annual mean wind speed per calendar year — rather than on the rolling daily CAWS series. This avoids the serial-correlation bias induced by the 252-day overlapping window construction: adjacent rolling-window values share 251 of 252 observations and are therefore almost perfectly correlated, which would render standard deviation and quantile estimates unreliable. The time-series plot still uses the rolling CAWS for visual continuity.]}
+
 \begin{table}[ht]
 \centering
-\caption{CAWS Hedging Summary (Producer Perspective)}
+\caption{CAWS Hedging Summary (Producer Perspective, non-overlapping annual obs)}
 \label{tbl:caws_summary}
 \small
 \begin{tabularx}{0.7\textwidth}{l >{\raggedright\arraybackslash}X}
 \toprule
 \textbf{Metric} & \textbf{Value} \\
 \midrule
-Fair strike $K_{\text{CAWS}}$ & 2.4644 m/s \\
-CAWS standard deviation & 0.2013 m/s \\
-Mean payoff (zero by construction) & 0.0000 m/s \\
-Sharpe ratio & --- (zero mean, no alpha) \\
-5th percentile (VaR$_{5\%}$) & -0.2928 m/s \\
-Conditional VaR$_{5\%}$ (CVaR) & -0.3031 m/s \\
+Fair strike $K_{\text{CAWS}}$ & see notebook output \\
+Annual obs $n$ & 4 (Dataset A, 2015--2018) \\
+Mean payoff & $\approx 0$ (by construction) \\
+Sharpe ratio & $\approx 0$ (zero mean) \\
+5th percentile VaR$_{5\%}$ & see notebook output \\
+CVaR$_{5\%}$ & see notebook output \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\textbf{Interpretation}:
-
-1. **Fair strike**: At $K_{\text{CAWS}} = 2.46$ m/s, the expected payoff is zero (by definition). A producer selling the swap receives this strike in exchange for bearing the volatility risk.
-
-2. **Left-tail hedging**: In the worst 5\% of outcomes (5th percentile), CAWS falls 0.293 m/s below the fair strike, generating a loss of $-0.293$ m/s for the hedger. This represents a very bad year for wind (but occurs with 5\% probability). The CVaR of $-0.303$ is the average loss in the worst 5\% tail, providing an even more pessimistic estimate.
-
-3. **Practical value**: For a 1 GW wind farm with output elasticity 3 (cubic power curve), a 0.3 m/s reduction in CAWS implies roughly 14-16\% loss in annual generation ($\approx 300$ GWh reduction on ~2,000 GWh annual output for a 1 GW farm at reasonable capacity factors). The hedging premium (difference between true fair strike and what a producer would pay to reduce left-tail risk) can be substantial.
-
 \textit{[Technical Note: CAWS hedging differs from variance swaps: variance swaps hedge volatility and tail risk across the entire distribution, while CAWS hedges specifically the left-tail (low wind) risk. A producer might use CAWS swaps as a first layer (protecting against catastrophic low-wind years) and variance swaps as a second layer (protecting against volatile years). Combined, they provide comprehensive wind revenue protection.]}
+
+\section{Delta Sensitivity and Stress Analysis}
+
+The model-implied fair strike $K_{\text{var}}^B = h \times C_0$ has a closed-form sensitivity to the GARCH conditional variance state:
+\begin{equation}
+  \frac{\partial K_{\text{var}}^B}{\partial h} = C_0.
+\end{equation}
+For Dataset~A, $C_0 = 0.13138$, so each unit increase in the GARCH variance state shifts the fair strike by $0.13138$ units. This is the \textit{delta} of the variance swap with respect to the volatility state.
+
+\paragraph{Stress scenario.} If a persistent low-wind period (e.g., a European wind drought) doubles the GARCH conditional variance from $h_{t_0} \approx 0.414$ to $h_{\text{stress}} = 2 h_{t_0} \approx 0.828$, the fair strike shifts by:
+\begin{equation}
+  \Delta K_{\text{var}}^B = (h_{\text{stress}} - h_{t_0}) \times C_0 = h_{t_0} \times C_0 = K_{\text{var}}^B(h_{t_0}) \approx 0.054.
+\end{equation}
+This small absolute shift (relative to the Track A fair strike of 114) further confirms that the model-implied strike is primarily driven by $C_0$ (the seasonal component) and is insensitive to GARCH state fluctuations at Dataset~A's low-variance site.
 
 \section{Forecast Error Distribution: Normality and Tail Risk}
 

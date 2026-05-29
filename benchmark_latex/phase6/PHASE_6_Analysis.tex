@@ -40,6 +40,15 @@ Traditional energy derivatives (futures, forwards) protect against price risk bu
 
 Carr and Lee (2009) develop a general framework for pricing volatility derivatives on commodity spot prices, including variance swaps, volatility swaps, and exotic variance-linked structures. The framework has two components: (1) an empirical Track A based on historical realized variance, and (2) a model-based Track B leveraging the continuous-time dynamics from earlier phases.
 
+\textit{[Important note: Track A and Track B measure the variance of \textbf{different processes} and are not directly comparable without unit reconciliation. Track A measures $\operatorname{Var}[\log(G_t/G_{t-1})]$, the log-return variance of SMARD aggregate generation. Track B measures $h \times C_0$, the scaled variance of the de-seasonalised wind speed process $\tilde{W}(t)$. The delta-method bridge (Section~\ref{sec:power_curve}) is required to express both on the same axis. Furthermore, SMARD $G_t$ is a physically-settled aggregate index, not a traded financial asset; therefore no replication argument applies, $\theta_1 = \theta_2 = 0$ throughout, and this instrument is an OTC physically-settled index swap rather than an exchange-traded variance swap.]}
+
+\paragraph{Definitions used throughout.}
+\begin{itemize}
+  \item \textbf{Track A}: $K_{\text{var}}^A(t) = 252 \times \overline{\mathrm{RV}}_t^{(252)}$, rolling annualised realised variance of $\log(G_t/G_{t-1})$.
+  \item \textbf{Track B}: $K_{\text{var}}^B(h) = h \times C_0$, model-implied fair strike under piecewise-constant GARCH volatility (Tol 1997).
+  \item \textbf{Track B (scaled)}: $K_{\text{var}}^{B,\text{scaled}}(h) = (9/\bar{W}^2) \times h \times C_0$, unit-reconciled via the delta-method power curve link (Section~\ref{sec:power_curve}).
+\end{itemize}
+
 \subsection{Track A: Empirical Realized Variance Strike}
 
 For a variance swap with measurement period $[0, T]$, the empirical fair strike is:
@@ -193,7 +202,24 @@ The massive discrepancy ($0.0544$ vs $113.999$) arises because $C_0 = 0.13138$ i
 
 \textit{[Technical Note: The large gap between Track A (113.999) and Track B (0.0544) is \textit{not} a model failure, but rather evidence that the proxy dataset is unsuitable for pricing real wind derivatives. The price $K_{\text{var}}^B$ is only reliable if the wind model and seasonal decomposition accurately represent the underlying market. For a geographically mismatched dataset, $K_{\text{var}}^B$ is systematically biased downward. This is the motivation for Phase 7's Value of Information analysis.]}
 
+\section{Unit Reconciliation via the Delta Method}
+\label{sec:unit_reconciliation}
+
+Before comparing Track A and Track B numerically, the variance units must be aligned. The power curve gives $G = c W^3$, so applying the delta method to log-returns:
+\begin{equation}
+  \operatorname{Var}\!\left[\log\frac{G_t}{G_{t-1}}\right] \approx \frac{9}{\bar{W}^2} \operatorname{Var}[\tilde{W}],
+\end{equation}
+where $\bar{W}$ is the sample mean daily wind speed (m/s) over 2015--2018 and $\tilde{W}$ is the de-seasonalised wind speed. Since Track B gives $\operatorname{Var}[\tilde{W}] = h \times C_0$, the unit-reconciled Track B in generation-return units is:
+\begin{equation}
+  K_{\text{var}}^{B,\text{scaled}}(h) = \frac{9}{\bar{W}^2} \times h \times C_0.
+\end{equation}
+
+For Dataset A, $\bar{W} = 2.47$~m/s (Bologna 10\,m, 2015--2018), giving a scaling factor of $9/\bar{W}^2 \approx 1.476$. This raises the Track B point estimates slightly, but they remain orders of magnitude below Track A — confirming that the geographic mismatch (Bologna vs.\ German fleet), not unit mis-specification, is the dominant source of the pricing gap.
+
+The rolling RMSE between the aligned tracks, $\operatorname{RMSE}(K_{\text{var}}^A, K_{\text{var}}^{B,\text{scaled}})$, provides the empirical distance metric requested by the council review. A large RMSE here is expected and reflects the geographic mismatch, not a model error.
+
 \section{Power Curve Analysis: Wind Speed to Generation Linkage}
+\label{sec:power_curve}
 
 \subsection{Theoretical Motivation}
 
@@ -248,6 +274,14 @@ Full-sample Pearson correlation (2015--2024, 3,653 daily obs):
 \end{equation}
 
 This is modest but statistically significant and economically meaningful. Rolling 90-day correlations vary between $-0.3$ and $+0.1$, with the strongest negative correlation in winter months (high wind, low demand) and weakest (or slightly positive) in summer.
+
+\paragraph{Sub-period robustness (DE/AT price split, 1~October 2018).}
+The SMARD price series has a structural break on 1~October 2018 when Germany and Austria separated their bidding zones. To verify this split does not materially distort the merit-order finding, we compute the correlation in two sub-periods:
+\begin{equation}
+  \rho_{\text{pre}}(G,P) \quad (\text{dates} < \text{2018-10-01}), \qquad
+  \rho_{\text{post}}(G,P) \quad (\text{dates} \geq \text{2018-10-01}).
+\end{equation}
+If $|\rho_{\text{pre}} - \rho_{\text{post}}| < 0.05$, the structural break has no material effect on the merit-order finding. Results are reported in the notebook output alongside the full-sample correlation.
 
 \textit{[Technical Note: The correlation is modest because electricity markets are driven by many factors: load, conventional generation outages, natural gas prices, neighboring country flows, etc. Wind is only one driver. A stronger negative correlation (e.g., $\rho = -0.5$) would be expected in jurisdictions with very high wind penetration (e.g., Denmark, 80\%, or South Australia, 50\%), where wind dominates the marginal unit and its price impact. Germany (2015--2018) had ~15--20\% wind penetration, so merit-order effects are present but diluted.]}
 

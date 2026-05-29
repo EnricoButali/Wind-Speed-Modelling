@@ -249,24 +249,50 @@ onshore wind production. θ = 0 throughout (no calibration to Nordix).
   Plot: RV_t + rolling K_var^A. Save: phase6_B_rv_tracka.png
 
   ## 5. MODEL-IMPLIED FAIR STRIKE (TRACK B)
-  Load h_series → compute h_winter (DJF mean), h_summer (JJA mean).
-  h_t0 from car4_parameters_phase4.csv.
-  Four h scenarios: h_t0, h_winter, h_summer, h=1.0.
+  Definitions (print at top of section):
+    Track A = 252 × rolling-mean(r_t²), SMARD generation log-returns.
+    Track B = h × C0, GARCH conditional variance × Fourier integral.
+    These measure variance of different processes; reconcile before comparison.
+
+  Static scenarios: load h_series. Compute h_winter (DJF mean), h_summer (JJA mean).
+  h_t0 from car4_parameters_phase4.csv. Four scenarios: h_t0, h_winter, h_summer, h=1.0.
   K_var^B(h) = h × C0 for each scenario.
-  Note: θ = 0 → risk-neutral NIG adjustment equals 1; Track B reduces
-  to the piecewise-constant Tol (1997) formula.
+  Note: θ = 0 → Track B reduces to the piecewise-constant Tol (1997) formula.
   Print comparison table: K_var^A vs K_var^B for each scenario.
+
+  Unit reconciliation via delta-method (G = c × W³ power curve):
+    K_var^B_scaled = (9 / W̄²) × h × C0
+    W̄ = mean(wind_speed_100m) daily from germany_wind.csv (full 2015–2024 sample).
+    c from OLS slope (Section 6) provides empirical check on the 9/W̄² factor.
+    Compute K_var^B_scaled for each h scenario alongside raw K_var^B and K_var^A.
+
+  Time-varying Track B (rolling series):
+    K_varB_rolling_t = h_t × C0   (element-wise over full h_series)
+    Align with K_var^A rolling series. Compute RMSE(K_varA_rolling, K_varB_scaled_rolling).
+    This is the empirical distance between the two tracks — the core VoI metric.
+
+  Out-of-sample validation (Dataset B only — 10-year window allows this):
+    In-sample: 2015–2019 (use h_t0 and C0 calibrated on this window only).
+    Out-of-sample: 2020–2024 (hold-out).
+    Evaluate K_var^B_OOS prediction vs K_var^A on 2020–2024. Report OOS RMSE.
+    Interpretation: does the model have genuine predictive content beyond in-sample fit?
 
   ## 6. POWER CURVE LINKAGE
   Conceptual: G(t) ∝ W(t)³ (Betz law, 100m hub height).
-  Delta-method: Var[G] ≈ (3c W̄²)² × Var[W].
-  Empirical: scatter G_t vs W_t³ (load germany_wind.csv), fit OLS,
-  report R² and proportionality constant. Motivates why CAR(4) wind
-  speed variance drives generation variance.
+  Delta-method: Var[log G] ≈ (9/W̄²) × Var[W̃].
+  Empirical: scatter G_t vs W_t³ (load germany_wind.csv, wind_speed_100m column),
+  fit OLS, report R² and proportionality constant c.
+  W̄ used in Section 5 unit reconciliation = mean(wind_speed_100m daily).
+  Motivates why CAR(4) wind speed variance drives generation variance.
 
   ## 7. MERIT-ORDER EFFECT
   Scatter: daily G_t vs P_t. Rolling 90-day Pearson ρ(G, P).
   Expected: negative correlation (high wind → low price).
+  Sub-period robustness check:
+    rho_pre  = corr(G, P) for dates < 2018-10-01
+    rho_post = corr(G, P) for dates >= 2018-10-01
+    Print both. Confirms structural break (DE/AT price split) does not materially
+    distort the merit-order finding.
   Interpretation: wind variance swap as natural hedge for producers.
 
   ## 8. SYNTHETIC VARIANCE SWAP — PAYOFF SIMULATION
@@ -287,7 +313,9 @@ onshore wind production. θ = 0 throughout (no calibration to Nordix).
   variance_swap_phase6.csv:
     columns: date, G_daily_MWh, price_EUR_MWh, log_return_G,
              RV_daily, RV_rolling252, K_varA,
-             K_varB_ht0, K_varB_hwinter, K_varB_hsummer, K_varB_h1
+             K_varB_ht0, K_varB_hwinter, K_varB_hsummer, K_varB_h1,
+             K_varB_rolling,   ← time-varying: h_t × C0 aligned to daily dates
+             K_varB_scaled_ht0 ← unit-reconciled: (9/W̄²) × h_t0 × C0
   smard_daily_phase6.csv:
     columns: date, G_daily_MWh, price_EUR_MWh
   variance_swap_summary_phase6.csv: summary table above.
@@ -373,11 +401,32 @@ Value of Information argument developed in Phase 7.
   Plot RV_t + rolling K_var^A. Save: phase6_A_rv_tracka.png
 
   ## 5. MODEL-IMPLIED FAIR STRIKE (TRACK B)
-  Load h_series. Compute h_winter (DJF), h_summer (JJA), h_t0 = h_series.iloc[-1].
-  K_var^B(h) = h × C0  for each of the four h scenarios.
-  Print table: K_var^A (full period) vs K_var^B (each scenario).
+  Definitions (print at top of section):
+    Track A = 252 × rolling-mean(r_t²), where r_t = log(G_t/G_{t-1}), SMARD generation.
+    Track B = h × C0, where h is GARCH conditional variance, C0 is Fourier integral of σ²_seas.
+    These measure variance of different processes and must be reconciled before comparison.
+
+  Static scenarios: load h_series. Compute h_winter (DJF), h_summer (JJA),
+  h_t0 = h_series.iloc[-1]. K_var^B(h) = h × C0 for each of the four scenarios.
+  Print table: K_var^A (full-period mean) vs K_var^B for each scenario.
+
+  Unit reconciliation via delta-method (G = c × W³ power curve):
+    Var[log(G_t/G_{t-1})] ≈ (9/W̄²) × Var[W̃]
+    K_var^B_scaled = (9 / W̄²) × h × C0
+    W̄ = daily mean wind speed from data.csv (Bologna, 2015–2018, resampled to daily mean)
+    c from OLS slope of Phase 6 Section 6 provides empirical check on the 9/W̄² scaling.
+    Compute K_var^B_scaled for each h scenario and print alongside K_var^B and K_var^A.
+
+  Time-varying Track B (rolling series):
+    K_varB_rolling_t = h_t × C0   (element-wise over full h_series)
+    Align K_varB_rolling with K_var^A rolling series on common dates.
+    Compute: RMSE_A = RMSE(K_varA_rolling, K_varB_scaled_rolling) over overlapping window.
+    Print RMSE_A — this is the empirical distance between the two tracks.
+
   Note: K_var^B Dataset A ≈ 0.054 vs Dataset B ≈ 0.87 — factor ~16× difference
   driven by C0_A = 0.131 << C0_B = 1.163. This is the VoI gap quantified in Phase 7.
+  The RMSE between tracks answers whether the model is close to the market,
+  not just whether the point estimates differ.
 
   ## 6. POWER CURVE LINKAGE
   Load data.csv. Resample 'wind_speed' hourly → daily mean. Restrict to 2015-2018.
@@ -392,6 +441,10 @@ Value of Information argument developed in Phase 7.
   ## 7. MERIT-ORDER EFFECT
   Scatter daily G_t vs P_t. Rolling 90-day Pearson ρ(G, P).
   Expected: negative correlation (same market data as Dataset B, same result).
+  Sub-period robustness check (October 2018 DE/AT price split):
+    rho_pre  = corr(G, P) for dates < 2018-10-01
+    rho_post = corr(G, P) for dates >= 2018-10-01
+    Print both. If similar, the structural break has no material effect on the merit-order finding.
   Save: phase6_A_merit_order.png
 
   ## 8. SYNTHETIC VARIANCE SWAP — PAYOFF SIMULATION
@@ -413,7 +466,9 @@ Value of Information argument developed in Phase 7.
   variance_swap_phase6.csv:
     columns: date, G_daily_MWh, price_EUR_MWh, log_return_G,
              RV_daily, RV_rolling252, K_varA,
-             K_varB_ht0, K_varB_hwinter, K_varB_hsummer, K_varB_h1
+             K_varB_ht0, K_varB_hwinter, K_varB_hsummer, K_varB_h1,
+             K_varB_rolling,   ← time-varying: h_t × C0 aligned to daily dates
+             K_varB_scaled_ht0 ← unit-reconciled: (9/W̄²) × h_t0 × C0
   smard_daily_phase6.csv:
     columns: date, G_daily_MWh, price_EUR_MWh
   variance_swap_summary_phase6.csv: summary table above.
@@ -508,8 +563,25 @@ ECMWF hub-height data (future Phase 2 data upgrade).
     K_var^B_A_corrected = K_var^B_A × (100/10)^(2/7) ≈ K_var^B_A × 1.741
   VoI metric: |K_var^B_B − K_var^B_A_corrected| / K_var^B_B (relative mispricing).
   Bar chart: raw and corrected K_var^B side-by-side.
+
+  Empirical distance (direct comparison — Renard council fix):
+    Load K_var^A_mean (full-sample mean of rolling K_var^A from Phase 6 CSV).
+    Load K_varB_scaled_ht0 from Phase 6 CSV (unit-reconciled Track B).
+    Compute: dist_A = |K_var^A_mean − K_varB_scaled_ht0| (absolute distance).
+    Print: "Track B_scaled(h_t0) is X units from Track A."
+    Reference notebook adds dist_B (Dataset B) and ratio dist_A/dist_B = VoI improvement.
+
+  Delta sensitivity (risk management):
+    ∂K_var^B / ∂h = C0   (sensitivity of fair strike to one-unit shift in GARCH state)
+    Stress scenario: h_stress = 2 × h_t0  (doubling of conditional variance)
+    K_var^B_stress = h_stress × C0; print change ΔK_var^B = K_var^B_stress − K_var^B(h_t0).
+    Interpretation: a wind drought that doubles GARCH variance shifts the fair strike by ΔK.
+
+  Save VoI table CSV: phase7_A_voi_table.csv
+    columns: Scenario, C0, h_t0, K_varB_raw, K_varB_corrected, K_varB_scaled,
+             K_varA_mean, dist_to_KvarA, mispricing_pct
   Benchmark notebook (Dataset A): show Dataset A values only; note Dataset B anchor.
-  Reference notebook (Dataset B): full cross-dataset bar chart and VoI table.
+  Reference notebook (Dataset B): full cross-dataset bar chart, VoI table, OOS RMSE.
   Save: phase7_A_voi_comparison.png / phase7_B_voi_comparison.png
 
   ## 5. CAWS HEDGING SIMULATION
@@ -523,9 +595,18 @@ ECMWF hub-height data (future Phase 2 data upgrade).
   K_CAWS = mean(CAWS_t) over the full in-sample period (fair strike).
   Synthetic derivative payoff for wind-power producer (N = 1 notional):
     Payoff_t = N × (K_CAWS − CAWS_t)  → positive when wind is low (left-tail hedge)
-  Compute P&L distribution over all rolling annual windows.
-  Metrics: mean P&L, std P&L, Sharpe ratio, CVaR₅% (expected shortfall, 5th pct).
-  Left-tail focus: histogram with 5th percentile marked in red.
+
+  Distribution metrics — use NON-OVERLAPPING annual observations to avoid
+  overlapping-window serial correlation bias (Tanaka council fix):
+    annual_CAWS = [mean(CAWS over calendar year y) for y in sample years]
+    annual_payoff = K_CAWS − annual_CAWS   (one obs per year)
+    Dataset A: 4 annual obs (2015-2018); Dataset B: 10 annual obs (2015-2024).
+    Metrics: mean payoff, std payoff, Sharpe ratio, CVaR₅% on these annual obs.
+    Note: rolling-window CAWS_t is still used for plotting the time series.
+    Add footnote: "Distribution metrics computed on non-overlapping annual windows
+    to avoid serial correlation induced by the 252-day rolling construction."
+
+  Left-tail focus: histogram of annual payoffs with 5th percentile marked in red.
   Save: phase7_A_caws_hedge_pnl.png / phase7_B_caws_hedge_pnl.png
 
   ## 6. FORECAST ERROR DISTRIBUTION
@@ -554,11 +635,13 @@ ECMWF hub-height data (future Phase 2 data upgrade).
 ### Outputs — CSVs
   benchmark_notebooks/phase7/:
     phase7_A_dm_results.csv       → Model, RMSE, DM_stat, p_value, Reject_5pct
-    phase7_A_hedging_summary.csv  → Year, RV_annual, K_varB, Payoff, CVaR5pct
+    phase7_A_hedging_summary.csv  → metric, value (K_CAWS, mean/std/Sharpe/VaR5/CVaR5 on annual obs)
+    phase7_A_voi_table.csv        → Scenario, C0, h_t0, K_varB_raw, K_varB_corrected,
+                                     K_varB_scaled, K_varA_mean, dist_to_KvarA, mispricing_pct
   reference_nb/Phase_7/:
     phase7_B_dm_results.csv
     phase7_B_hedging_summary.csv
-    phase7_B_voi_table.csv        → Dataset, C0, h_t0, K_varB_raw, K_varB_corrected, mispricing_pct
+    phase7_B_voi_table.csv        → same columns as A, plus OOS_RMSE_insample, OOS_RMSE_outsample
 
 ---
 
