@@ -60,6 +60,22 @@ Price note: Day_ahead_prices files contain two columns:
   Merge rule: price = Column C where available, else Column O
   This reflects the DE/AT market split on 1 October 2018.
 
+### Cross-dataset comparison table
+Required in Phase 7 §1 (both notebooks) and in the Phase 7 LaTeX intro. Columns:
+  Source | Location | Height | Period | Primary variables | Advantages | Limitations
+Rows:
+  Dataset A — OpenWeatherMap API (beniamino98/greenfin-project) | Bologna, Italy
+              10 m | 2015–2018 (4 yr, 1,462 obs) | wind_speed (m/s)
+              Advantages: freely available, easy to download, sufficient for methodology
+              Limitations: proxy-quality, 10 m height, low-wind site, 4-year window only
+  Dataset B — Open-Meteo ERA5 reanalysis | Nordfriesland, Germany (lat=54.77, lon=8.85)
+              100 m | 2015–2024 (10 yr, 3,652 obs) | wind_speed_100m, wind_speed_10m,
+              wind_direction_100m
+              Advantages: hub-height, geographically aligned with SMARD generation,
+              10-year window enables OOS validation, ERA5 reanalysis quality
+              Limitations: model-based (not anemometer), no sub-daily resolution here
+Purpose: motivates the A→B upgrade; provides reference for future studies.
+
 ---
 
 ## Phase completion status
@@ -137,15 +153,23 @@ Defer all SV estimation to ECMWF hourly data (future upgrade).
 
   ## 4. REMARK ON CHANGE OF MEASURE
   Formally, Girsanov would shift drifts: κ_V^Q = κ_V + θ₂ξ.
-  In this application θ₁ = θ₂ = 0 throughout because:
-    (a) SMARD G_t is a physical quantity, not a traded asset — no Q
-        measure is attached to it and no replication argument applies.
-    (b) The only observable traded wind derivatives (Nordix futures)
-        cover Norway, not Nordfriesland — geographic mismatch prevents
-        calibration of θ.
-  Consequence: P = Q. Track A (empirical mean RV under P) and Track B
-  (model-implied E^Q[∫σ²dt]) coincide, and Track B reduces to h × C0.
-  No Girsanov computation is needed anywhere in Phases 5 or 6.
+  In this application θ₁ = θ₂ = 0 is adopted as a benchmark assumption:
+    (a) SMARD G_t is a physical quantity, not a traded asset — no clean
+        replication argument pins down the equilibrium market price of risk.
+    (b) The only liquid traded wind derivatives (Nordix futures) cover
+        Norway, not Nordfriesland — geographic mismatch prevents
+        calibration of θ even if option data were accessible.
+  Framing rule (IMPORTANT): present θ = 0 explicitly as a reasonable
+  benchmark assumption that makes Track B analytically tractable in the
+  absence of option-implied data — NOT as the standard or equilibrium MPR.
+  Acknowledge this simplification clearly in both notebooks and LaTeX.
+  Do NOT write "θ = 0 is standard" or "the market price of risk is zero";
+  write "we adopt θ = 0 as a benchmark in the absence of EEX option data".
+  Future extension (designated upgrade path): option-implied calibration
+  of θ via EEX German Power options and the full Carr-Lee (2009) replication
+  framework. Present this as a possible extension, not a necessary component.
+  Consequence under θ = 0: P = Q. Track B reduces to h × C0.
+  No Girsanov computation is needed in Phases 5 or 6 under this benchmark.
 
   ## 5. CHARACTERISTIC FUNCTION
   Log-char. function of W̃(T) given F_t (Heston 1993):
@@ -192,7 +216,11 @@ Defer all SV estimation to ECMWF hourly data (future upgrade).
 Carr & Lee (2009), "Volatility Derivatives",
 Annual Review of Financial Economics 1:1–21. PDF in papers/.
 Synthetic instrument: wind electricity variance swap on German
-onshore wind production. θ = 0 throughout (no calibration to Nordix).
+onshore wind production. θ = 0 adopted as benchmark assumption
+(see Phase 5 §4 framing rule): present explicitly as a tractable
+simplification in the absence of EEX option-implied data, not as
+the equilibrium market price of risk. Option-implied calibration
+via EEX German Power options is the designated future extension.
 
 ### Hard constraints
 - Do NOT calibrate θ to real Nordix prices (geographic mismatch).
@@ -337,7 +365,10 @@ onshore wind production (SMARD G_t). Track A (empirical) is identical — it der
 from the market, not the wind model. Track B uses Dataset A GARCH/Fourier parameters
 (Bologna proxy), making K_var^B much lower than Dataset B and demonstrating the
 Value of Information argument developed in Phase 7.
-θ = 0 throughout (P = Q, no Nordix calibration).
+θ = 0 adopted as benchmark assumption (P = Q). Present explicitly as a
+tractable simplification in the absence of option-implied data, not as
+the equilibrium MPR. See Phase 5 §4 framing rule. Option-implied
+calibration via EEX German Power options is the designated future extension.
 
 ### Hard constraints
 - C0 = 0.13138  (Phase 1 Fourier constant, Dataset A — DO NOT re-estimate, DO NOT
@@ -534,6 +565,10 @@ ECMWF hub-height data (future Phase 2 data upgrade).
   ## 1. DATA LOADING AND ALIGNMENT
   Load all Phase 1–6 outputs. Print shapes and date ranges.
   Report: Dataset A N=1 462, Dataset B N=3 652.
+  Print cross-dataset comparison table (see DATASET STATUS section):
+    Source | Location | Height | Period | Primary variables | Advantages | Limitations
+  Benchmark notebook (Dataset A): Dataset A row only; note Dataset B values for context.
+  Reference notebook (Dataset B): both rows side-by-side as a formatted table.
 
   ## 2. MODEL HIERARCHY — DM FORECAST TESTS
   Models tested on W̃(t) (1-step-ahead forecast errors):
