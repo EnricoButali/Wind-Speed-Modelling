@@ -25,7 +25,7 @@
 \maketitle
 
 \begin{abstract}
-Phase 7 validates the wind speed forecasting and derivatives pricing framework across all five competing models through rigorous hypothesis testing and quantifies the economic cost of using a geographic proxy (Bologna 10\,m) instead of an aligned dataset (Nordfriesland 100\,m, Dataset B). Diebold-Mariano forecast tests confirm that AR(4) significantly outperforms the persistence benchmark (RMSE = 0.7807 vs 0.8876, $DM = 8.28$, $p < 0.001$), with a 12\% improvement. CAR(4) continuous-time embedding achieves the same 1-step mean forecast but enables options pricing and variance swap valuation. GARCH(1,1) diagnostics (Ljung-Box test on squared residuals, ARCH-LM test) confirm adequacy of conditional heteroskedasticity modeling. Value of Information (VoI) analysis reveals a catastrophic 93.8\% mispricing in model-implied variance swap fair strikes when using the Bologna proxy ($K_{\text{var}}^B(A) = 0.0544$ vs $0.8735$ for aligned Dataset B), driven by Bologna's 8.8× lower seasonal volatility ($C_0$). Height correction (Hellmann exponent 2/7, scaling factor 1.93) reduces the mispricing to 88\% but does not resolve the fundamental geographic misalignment. CAWS (Cumulative Accumulated Wind Speed) hedging simulation demonstrates the practical value of left-tail risk management, with 5th-percentile worst-case loss of $-0.293$ m/s. Phase 7 establishes the methodology validation framework for Phase 7 Dataset B and quantifies the premium justifiable for upgrading from proxy to aligned data.
+Phase 7 validates the wind speed forecasting and derivatives pricing framework across all five competing models through rigorous hypothesis testing and quantifies the economic cost of using a geographic proxy (Bologna 10\,m) instead of an aligned dataset (Nordfriesland 100\,m, Dataset B). Diebold-Mariano forecast tests confirm that AR(4) significantly outperforms the persistence benchmark (RMSE = 0.7802 vs 0.8868, $DM = 8.26$, $p < 0.001$), with a 12\% improvement. AR(4)+GARCH and CAR(4) variants share the same 1-step conditional mean as AR(4) and therefore achieve identical point-forecast RMSE; GARCH and NIG add distributional value (interval forecasts, tail risk) rather than point accuracy. GARCH(1,1) diagnostics (Ljung-Box test on squared residuals, ARCH-LM test) confirm adequacy of conditional heteroskedasticity modeling. Value of Information (VoI) analysis reveals a 93.8\% mispricing in model-implied variance swap fair strikes when using the Bologna proxy ($K_{\text{var}}^B(A) = 0.0544$ vs $0.8735$ for aligned Dataset B), driven by Bologna's 8.8× lower seasonal volatility ($C_0$). Height correction (Hellmann exponent 2/7, scaling factor 1.93) reduces the mispricing to 88\% but does not resolve the fundamental geographic misalignment. CAWS (Cumulative Accumulated Wind Speed) hedging simulation on four non-overlapping annual observations yields CVaR$_{5\%} \approx -0.121$\,m/s. Phase 7 establishes the methodology validation framework for Phase 7 Dataset B and quantifies the premium justifiable for upgrading from proxy to aligned data.
 \end{abstract}
 
 \section{Introduction: Validation Framework and Value of Information}
@@ -78,26 +78,26 @@ We compare:
 \toprule
 \textbf{Model} & \textbf{RMSE} & \textbf{DM Stat.} & \textbf{p-value} & \textbf{Reject H\textsubscript{0} (5\%)} \\
 \midrule
-Persistence (benchmark) & 0.8876 & --- & --- & --- \\
-AR(4) & 0.7807 & 8.280 & $< 0.0001$ & Yes \\
-AR(4)+GARCH & 1.0012 & -6.977 & $< 0.0001$ & Yes \\
-CAR(4)+Gaussian & 0.7807 & 8.280 & $< 0.0001$ & Yes \\
-CAR(4)+NIG & 0.3741 & 21.096 & $< 0.0001$ & Yes \\
+Persistence (benchmark) & 0.8868 & --- & --- & --- \\
+AR(4) & 0.7802 & 8.265 & $< 0.0001$ & Yes \\
+AR(4)+GARCH & 0.7802 & 8.265 & $< 0.0001$ & Yes \\
+CAR(4)+Gaussian & 0.7802 & 8.265 & $< 0.0001$ & Yes \\
+CAR(4)+NIG & 0.7802 & 8.265 & $< 0.0001$ & Yes \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \textbf{Key Findings}:
 
-1. **AR(4) vs Persistence**: RMSE improves by 12.0\% ($0.7807$ vs $0.8876$), and the DM statistic ($8.28$) is highly significant, rejecting the null of equal accuracy. AR(4) incorporates valuable lagged information.
+1. **AR(4) vs Persistence**: RMSE improves by 12.0\% ($0.7802$ vs $0.8868$), and the DM statistic ($8.27$) is highly significant, rejecting the null of equal accuracy. AR(4) incorporates valuable lagged information.
 
-2. **AR(4)+GARCH degrades performance**: RMSE increases to 1.0012, worse than persistence. This occurs because the conditional variance term $h(t)$ scales the point forecast, introducing noise that worsens 1-step-ahead accuracy. While GARCH improves interval forecasts and option pricing, it does not improve point estimation at daily frequency.
+2. **AR(4)+GARCH has the same 1-step RMSE as AR(4)** (0.7802): GARCH models the conditional variance $h(t)$, not the conditional mean. The 1-step-ahead point forecast is identical to AR(4), so RMSE is unchanged. GARCH adds value for prediction intervals, VaR estimates, and derivatives pricing, but not for point-forecast accuracy at daily frequency.
 
-3. **CAR(4)+Gaussian equals AR(4)**: By Euler discretization equivalence, the 1-step mean forecast from CAR(4) is identical to AR(4), so RMSE and DM statistics are equal. However, CAR(4) enables continuous-time pricing (options, variance swaps) in later phases.
+3. **CAR(4)+Gaussian equals AR(4)**: By Euler discretization equivalence, the 1-step conditional mean from CAR(4) is identical to AR(4), so RMSE and DM statistics are equal. CAR(4) enables continuous-time pricing (options, variance swaps) in later phases without sacrificing forecast accuracy.
 
-4. **CAR(4)+NIG**: RMSE = 0.3741 appears to dramatically improve accuracy. However, this is misleading: NIG normalization divides residuals by $\delta = 2.087$, mechanically reducing squared errors without changing point forecasts. The normalized residuals test distributional assumptions but do not improve prediction.
+4. **CAR(4)+NIG has the same 1-step RMSE as AR(4)** (0.7802): symmetric NIG ($\beta = 0$) has the same conditional mean as a Gaussian CAR(4), so point forecasts are identical. NIG adds value for tail-risk assessment and options pricing by accurately fitting the heavy-tailed innovation distribution, but does not change the 1-step conditional mean.
 
-\textit{[Technical Note: A common error is interpreting normalized residuals as improved forecasts. The CAR(4)+NIG RMSE reflects the rescaling $e / \delta$, not true predictive improvement. The actual point forecasts are identical to AR(4). This model is valuable for assessing tail risk and option pricing, but not for point forecasting. The AR(4) RMSE of 0.7807 is the benchmark for 1-step accuracy.]}
+\textit{[Technical Note: Models (b)--(e) in the hierarchy share the same 1-step conditional mean but differ in higher moments. GARCH refines the second moment; NIG refines the distributional shape (kurtosis, tails). These refinements matter for interval forecasts and options pricing but are not visible in RMSE comparisons, which measure only squared mean errors. The AR(4) RMSE of 0.7802 is the benchmark for 1-step point accuracy.]}
 
 \section{GARCH Volatility Diagnostics}
 
@@ -127,7 +127,7 @@ where $R^2$ is from regressing $z_t^2$ on $z_{t-1}^2, \ldots, z_{t-q}^2$.
 
 All tests show $p > 0.05$, indicating GARCH(1,1) has adequately removed conditional heteroskedasticity. The standardized residuals $z_t$ are approximately white noise.
 
-\textit{[Technical Note: A large p-value (>0.05) means we fail to reject the null that residuals are white noise---this is the desired outcome. If LB(z_t^2, lag 20) had $p < 0.05$, it would indicate GARCH has not fully captured volatility clustering, suggesting a higher-order model (GARCH(2,1) or TARCH) might be necessary. Our result validates GARCH(1,1) as adequate for Dataset A.]}
+\textit{[Technical Note: A large p-value ($>$0.05) means we fail to reject the null that residuals are white noise---this is the desired outcome. If LB($z_t^2$, lag 20) had $p < 0.05$, it would indicate GARCH has not fully captured volatility clustering, suggesting a higher-order model (GARCH(2,1) or TARCH) might be necessary. Our result validates GARCH(1,1) as adequate for Dataset A.]}
 
 \section{Value of Information: Dataset A vs Dataset B}
 
@@ -135,9 +135,15 @@ All tests show $p > 0.05$, indicating GARCH(1,1) has adequately removed conditio
 
 The fundamental issue with Dataset A (Bologna 10\,m proxy) is that it does not align with the German wind market being hedged. Two corrections can be applied:
 
-1. **Raw comparison**: Direct comparison of K_var^B values without adjustment
-2. **Height correction**: Scaling variance from 10\,m to 100\,m using the wind power law
+Two corrections can be applied:
 
+\begin{enumerate}
+    \item \textbf{Raw comparison}: Direct comparison of
+    $K_{\mathrm{var}}^{AB}$ values without adjustment.
+
+    \item \textbf{Height correction}: Scaling variance from
+    10\,m to 100\,m using the wind power law.
+\end{enumerate}
 The power law profile predicts wind speed scales with height as:
 \begin{equation}
 v(h) = v(h_0) \left( \frac{h}{h_0} \right)^{\alpha},
@@ -271,13 +277,35 @@ CAR(4)+NIG & 3.7 & 0.1596 & Yes \\
 
 \textbf{Key Results}:
 
-1. **Raw residuals are non-normal**: Both Persistence and AR(4) residuals exhibit excess kurtosis (heavy tails), failing the normality test.
+\textbf{Key Results}
 
-2. **NIG normalization succeeds**: Dividing AR(4) residuals by the NIG scale parameter $\delta = 2.087$ yields residuals with JB p-value = 0.160, failing to reject normality. This suggests that NIG captures the heavy tails of wind speed innovations better than a Gaussian.
+\begin{enumerate}
+    \item \textbf{Raw residuals are non-normal:}
+    Both Persistence and AR(4) residuals exhibit excess kurtosis
+    (heavy tails), failing the normality test.
 
-3. **Implication for options pricing**: Option prices depend on tail probabilities. Using Gaussian distributions (implicit in Black-Scholes) underestimates the cost of out-of-the-money options (overestimates OTM probability). NIG-adjusted pricing would correct this bias, particularly for far-OTM calls/puts on wind speed.
+    \item \textbf{NIG normalization succeeds:}
+    Dividing AR(4) residuals by the NIG scale parameter
+    $\delta = 2.087$ yields residuals with JB p-value $=0.160$,
+    failing to reject normality. This suggests that the NIG
+    distribution captures the heavy tails of wind-speed innovations
+    better than a Gaussian distribution.
 
-\textit{[Technical Note: The NIG distribution has two tails parameters: $\alpha$ (tail heaviness) and $\beta$ (skewness). Dataset A anchors from Phase 4 give $\alpha = 4.374$, $\beta = 0$ (symmetric). The $\delta = 2.087$ is the scale. This distribution fits heavy-tailed wind residuals well and is used in exotic options pricing (Barndorff-Nielsen & Shephard 2001).]}
+    \item \textbf{Implication for options pricing:}
+    Option prices depend on tail probabilities. Gaussian
+    distributions (implicit in Black--Scholes) underestimate the
+    cost of out-of-the-money options (equivalently, they
+    overestimate OTM probabilities). NIG-adjusted pricing would
+    correct this bias, particularly for far-OTM calls and puts on
+    wind speed.
+\end{enumerate}
+
+{\itshape
+Technical Note: The NIG distribution has two tail parameters:
+$\alpha$ (tail heaviness) and $\beta$ (skewness). Dataset A anchors from
+Phase 4 give $\alpha = 4.374$, $\beta = 0$ (symmetric). The
+$\delta = 2.087$ is the scale.
+}
 
 \section{Synthesis: Dataset A as Methodological Benchmark}
 
@@ -292,29 +320,54 @@ Phase 7 (Dataset A) establishes the methodological framework that Phase 7 (Datas
 \toprule
 \textbf{Component} & \textbf{Finding} & \textbf{Implication} \\
 \midrule
-\textbf{Forecast Accuracy} & AR(4) RMSE = 0.7807; DM = 8.28, p $<$ 0.001 & Significant improvement over persistence \\
+\textbf{Forecast Accuracy} & AR(4) RMSE = 0.7802; DM = 8.27, p $<$ 0.001 & Significant improvement over persistence \\
 \textbf{Conditional Variance} & GARCH(1,1) passes diagnostics (LB, ARCH-LM all p $>$ 0.05) & Model is adequate; higher order unnecessary \\
 \textbf{Continuous-Time Embedding} & CAR(4)+Gaussian maintains AR(4) point forecast & 1-step accuracy unchanged; enables pricing \\
 \textbf{Tail Risk Modeling} & CAR(4)+NIG residuals approximately normal (JB p = 0.16) & NIG distribution fits heavy tails; use for options \\
-\textbf{Hedging Effectiveness} & CAWS VaR$_{5\%}$ = -0.293 m/s (worst 5\% case) & Hedging pool is economically significant \\
+\textbf{Hedging Effectiveness} & CAWS VaR$_{5\%}$ = -0.109\,m/s, CVaR$_{5\%}$ = -0.121\,m/s (4 non-overlapping annual obs) & Hedging pool is economically significant \\
 \textbf{Pricing Accuracy} & VoI (raw) = 93.8\%; VoI (height-corr.) = 88.0\% & Geographic proxy is inadequate; upgrade needed \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\textbf{Key Takeaways}:
+\textbf{Key Takeaways}
 
-1. **Forecast hierarchy is validated**: AR(4) is the reliable 1-step benchmark. CAR(4) preserves accuracy while enabling derivatives pricing. NIG residuals provide tail-risk insight.
+\begin{enumerate}
+    \item \textbf{Forecast hierarchy is validated:}
+    AR(4) is the reliable one-step-ahead benchmark. CAR(4)
+    preserves forecasting accuracy while enabling derivatives
+    pricing. NIG residuals provide additional insight into
+    tail risk.
 
-2. **GARCH is sufficient**: Diagnostics confirm GARCH(1,1) has adequately modeled conditional volatility. Residuals are white noise.
+    \item \textbf{GARCH is sufficient:}
+    Diagnostic tests confirm that GARCH(1,1) adequately models
+    conditional volatility. The standardized residuals behave
+    as white noise.
 
-3. **Geographic mismatch dominates pricing error**: The 88--94\% mispricing is driven by Bologna's low seasonal volatility (C_0), not by model misspecification. This cannot be fixed with taller anemometers at the same location.
+    \item \textbf{Geographic mismatch dominates pricing error:}
+    The observed 88--94\% mispricing is primarily driven by
+    Bologna's low seasonal volatility ($C_0$), rather than
+    model misspecification. This issue cannot be corrected
+    simply by adjusting for turbine hub height.
 
-4. **Dataset upgrade is economically justified**: For a 100 MW wind farm generating €50M in annual revenue, an 88\% underpricing of variance swap strikes translates to potential losses in the hundreds of millions over a 5--10 year contract if the producer hedges using the proxy-derived fair strike.
+    \item \textbf{Dataset upgrade is economically justified:}
+    For a 100 MW wind farm generating approximately
+    €50 million in annual revenue, an 88\% underpricing
+    of variance swap strikes could translate into losses of
+    hundreds of millions of euros over a 5--10 year contract
+    horizon if the producer hedges using the proxy-derived
+    fair strike.
 
-5. **Phase 7 Dataset B will show**: Replicating this validation framework on Dataset B (Nordfriesland ERA5, 100\,m, 10-year) will serve as both a confirmation and a revelation: same methodology, better data, should show improvement in pricing accuracy and elimination of geographic bias.
+    \item \textbf{Phase 7 Dataset B will show:}
+    Replicating this validation framework on Dataset B
+    (Nordfriesland ERA5, 100 m, 10-year) will serve both as
+    confirmation and as a test of data quality. Applying the
+    same methodology to a geographically aligned dataset
+    should improve pricing accuracy and substantially reduce
+    geographic bias.
+\end{enumerate}
 
-\section*{References}
+
 
 \begin{thebibliography}{99}
 

@@ -333,7 +333,9 @@ via EEX German Power options is the designated future extension.
   Save: phase6_B_payoff_fan.png
 
   ## 9. COMPLETE SUMMARY TABLE
-  Rows: Dataset A (Track A only) | Dataset B (Track A + Track B × 4 scenarios)
+  Rows: Dataset B Track A | Dataset B Track B × 4 h scenarios.
+  (Cross-dataset comparison — Dataset A vs Dataset B — is deferred to Phase 7.
+   Do NOT load benchmark_notebooks/phase6/ in this notebook; independence rule.)
   Columns: K_var, payoff mean, payoff std, VaR₅%.
   Print and save as variance_swap_summary_phase6.csv.
 
@@ -529,7 +531,8 @@ Do NOT apply 1.74× height correction to Dataset B (already at 100 m).
 Apply the power-law profile correction ONLY in Section 4 (VoI comparison) when
 directly placing A and B K_var^B values on the same axis.
 Height correction factor: (100/10)^(2α), α = 1/7 (Hellmann exponent).
-→ variance scales as (h₂/h₁)^(2/7): factor ≈ 1.741 on variance.
+→ variance scales as (h₂/h₁)^(2/7): factor ≈ 1.931 on variance.
+  Derivation: (100/10)^(2/7) = 10^(2/7) = exp(2/7 × ln 10) ≈ 1.9307.
 Vertical wind profile correction before any RMSE comparison with
 ECMWF hub-height data (future Phase 2 data upgrade).
 
@@ -582,7 +585,9 @@ ECMWF hub-height data (future Phase 2 data upgrade).
     H₀ = equal predictive accuracy vs Persistence benchmark.
     Report: DM statistic, p-value, rejection at 5% significance.
   Table: rows = models, columns = RMSE, DM stat, p-value, Reject H₀.
-  Anchor check: AR(4) RMSE must equal 0.6017 for Dataset A (Phase 2 fixed result).
+  Anchor check: AR(4) improvement over Persistence must equal ~12.2% for Dataset A.
+  (Phase 2 absolute RMSE 0.6017/0.6856 was on standardised W̃; Phase 7 loads raw
+  Phase 2 residuals giving ~0.780/0.887 in raw units — same improvement ratio.)
 
   ## 3. GARCH VOLATILITY DIAGNOSTICS
   Load garch_z_series_phase3.csv (standardised residuals z_t).
@@ -595,7 +600,7 @@ ECMWF hub-height data (future Phase 2 data upgrade).
   K_var^B_A = h_t0_A × C0_A ≈ 0.4137 × 0.13138 ≈ 0.054  (Bologna proxy)
   K_var^B_B = h_t0_B × C0_B ≈ 0.7511 × 1.163   ≈ 0.874  (Nordfriesland)
   Height-corrected comparison (ONLY in this section):
-    K_var^B_A_corrected = K_var^B_A × (100/10)^(2/7) ≈ K_var^B_A × 1.741
+    K_var^B_A_corrected = K_var^B_A × (100/10)^(2/7) ≈ K_var^B_A × 1.931
   VoI metric: |K_var^B_B − K_var^B_A_corrected| / K_var^B_B (relative mispricing).
   Bar chart: raw and corrected K_var^B side-by-side.
 
