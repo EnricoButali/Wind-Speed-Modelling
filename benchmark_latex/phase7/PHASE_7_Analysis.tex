@@ -148,7 +148,7 @@ The power law profile predicts wind speed scales with height as:
 \begin{equation}
 v(h) = v(h_0) \left( \frac{h}{h_0} \right)^{\alpha},
 \end{equation}
-where $\alpha \approx 1/7$ (Hellmann exponent) for neutral conditions. Since variance scales as velocity squared:
+where $\alpha \approx 1/7$ (wind profile power law exponent \citep{PetersonHennessey:1978}) for neutral conditions. Since variance scales as velocity squared:
 \begin{equation}
 \text{Var}(h) = \text{Var}(h_0) \left( \frac{h}{h_0} \right)^{2\alpha} = \text{Var}(h_0) \left( \frac{h}{h_0} \right)^{2/7}.
 \end{equation}
@@ -158,7 +158,7 @@ For $h_0 = 10$\,m and $h = 100$\,m:
 \text{correction factor} = \left( \frac{100}{10} \right)^{2/7} = 10^{2/7} = 1.9307.
 \end{equation}
 
-\textit{[Technical Note: The Hellmann exponent $\alpha = 1/7$ is empirical (measured from meteorological profiles), not theoretical. It varies with surface roughness and stability (more irregular terrain → larger $\alpha$; stable air → smaller $\alpha$). For offshore wind (smooth ocean surface), $\alpha \approx 1/10$, giving a factor $10^{2/10} = 1.585$. We use 1/7 for coastal Germany, a reasonable middle ground.]}
+\textit{[Technical Note: The wind profile power law exponent $\alpha = 1/7$ is empirical (Peterson \& Hennessey 1978, measured from meteorological profiles), not theoretical. It varies with surface roughness and stability (more irregular terrain → larger $\alpha$; stable air → smaller $\alpha$). For offshore wind (smooth ocean surface), $\alpha \approx 1/10$, giving a factor $10^{2/10} = 1.585$. We use 1/7 for coastal Germany, a reasonable middle ground.]}
 
 \subsection{Mispricing Quantification}
 
@@ -373,7 +373,7 @@ Phase 7 (Dataset A) establishes the methodological framework that Phase 7 (Datas
 \begin{thebibliography}{99}
 
 \bibitem{DM:1995}
-Diebold, F. X., \& Mariano, R. S. (1995). Comparing predictive accuracy. \textit{Journal of Business \& Economic Statistics}, 13(3), 134--144.
+Diebold, F. X., \& Mariano, R. S. (1995). Comparing predictive accuracy. \textit{Journal of Business \& Economic Statistics}, 13(3), 253--263.
 
 \bibitem{HarveyEtal:1997}
 Harvey, D. I., Leybourne, S. J., \& Newbold, P. (1997). Testing the equality of prediction mean squared errors. \textit{International Journal of Forecasting}, 13(2), 281--291.
@@ -387,8 +387,8 @@ Barndorff-Nielsen, O. E., \& Shephard, N. (2001). Non-Gaussian Ornstein-Uhlenbec
 \bibitem{Benth:2009}
 Benth, F. E., \& Šaltytė Benth, J. (2009). Dynamic pricing of wind futures. \textit{Energy Economics}, 31(1), 16--24.
 
-\bibitem{Hellmann:1917}
-Hellmann, G. (1917). Über die Bewegung der Luft in den untersten Metern der Atmosphäre. \textit{Meteorologische Zeitschrift}, 34, 273--285.
+\bibitem{PetersonHennessey:1978}
+Peterson, E. W., \& Hennessey, J. P. (1978). On the use of power laws for estimates of wind power potential. \textit{Journal of Applied Meteorology}, 17(3), 390--394.
 
 \bibitem{Tol:1997}
 Tol, R. S. J. (1997). On the autoregressive modelling of stochastic hourly wind speed series. \textit{Journal of Wind Engineering and Industrial Aerodynamics}, 68(1), 1--13.
