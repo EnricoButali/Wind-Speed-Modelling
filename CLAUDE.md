@@ -85,8 +85,8 @@ Purpose: motivates the A→B upgrade; provides reference for future studies.
 - Phase 5 Dataset B (SV theory):    COMPLETE. reference_nb/Phase_5/Phase_5.ipynb
 - Phase 6 Dataset A (Synthetic Var Swap): COMPLETE. benchmark_notebooks/phase6/PHASE_6.ipynb
 - Phase 6 Dataset B (Synthetic Var Swap): COMPLETE. reference_nb/Phase_6/Phase_6.ipynb
-- Phase 7 Dataset A (Validation):   PENDING
-- Phase 7 Dataset B (Validation):   PENDING
+- Phase 7 Dataset A (Validation):   COMPLETE. benchmark_notebooks/phase7/PHASE_7.ipynb
+- Phase 7 Dataset B (Validation):   COMPLETE. reference_nb/Phase_7/Phase_7.ipynb
 
 ---
 
