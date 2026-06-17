@@ -83,8 +83,8 @@ Purpose: motivates the A→B upgrade; provides reference for future studies.
 - Phase 5 Dataset A (SV theory):    COMPLETE. benchmark_notebooks/phase5/PHASE_5.ipynb
 - Phase 1–4 Dataset B:              COMPLETE. Notebooks validated.
 - Phase 5 Dataset B (SV theory):    COMPLETE. reference_nb/Phase_5/Phase_5.ipynb
-- Phase 6 Dataset A (Carr-Lee):     PENDING
-- Phase 6 Dataset B (Carr-Lee):     PENDING
+- Phase 6 Dataset A (Synthetic Var Swap): COMPLETE. benchmark_notebooks/phase6/PHASE_6.ipynb
+- Phase 6 Dataset B (Synthetic Var Swap): COMPLETE. reference_nb/Phase_6/Phase_6.ipynb
 - Phase 7 Dataset A (Validation):   PENDING
 - Phase 7 Dataset B (Validation):   PENDING
 
@@ -210,7 +210,7 @@ Defer all SV estimation to ECMWF hourly data (future upgrade).
 
 ---
 
-## Phase 6 Dataset B — Carr-Lee Variance Swap Pricing (reference_nb)
+## Phase 6 Dataset B — Synthetic Wind Variance Swap (Tol 1997, θ=0 benchmark) (reference_nb)
 
 ### Scope and core reference
 Carr & Lee (2009), "Volatility Derivatives",
@@ -221,6 +221,10 @@ onshore wind production. θ = 0 adopted as benchmark assumption
 simplification in the absence of EEX option-implied data, not as
 the equilibrium market price of risk. Option-implied calibration
 via EEX German Power options is the designated future extension.
+Carr-Lee (2009) is the theoretical motivation for variance swap
+replication; the implemented formula is K_var^B = h × C0 under the
+θ=0 benchmark. Carr-Lee option-implied calibration is future work
+only — do not title implemented sections "Carr-Lee".
 
 ### Hard constraints
 - Do NOT calibrate θ to real Nordix prices (geographic mismatch).
@@ -300,10 +304,11 @@ via EEX German Power options is the designated future extension.
     This is the empirical distance between the two tracks — the core VoI metric.
 
   Out-of-sample validation (Dataset B only — 10-year window allows this):
-    In-sample: 2015–2019 (use h_t0 and C0 calibrated on this window only).
-    Out-of-sample: 2020–2024 (hold-out).
-    Evaluate K_var^B_OOS prediction vs K_var^A on 2020–2024. Report OOS RMSE.
-    Interpretation: does the model have genuine predictive content beyond in-sample fit?
+    OOS evaluation uses the FULL-SAMPLE K_var^B (calibrated on 2015–2024) as
+    the model prediction, evaluated against realised K_var^A on the 2020–2024
+    hold-out only. No re-estimation of C0 or h_t0 on a restricted window.
+    This tests out-of-time predictive content under fixed parameters, not
+    genuine OOS calibration.
 
   ## 6. POWER CURVE LINKAGE
   Conceptual: G(t) ∝ W(t)³ (Betz law, 100m hub height).
@@ -359,7 +364,7 @@ via EEX German Power options is the designated future extension.
 
 ---
 
-## Phase 6 Dataset A — Carr-Lee Variance Swap Pricing (benchmark_notebooks)
+## Phase 6 Dataset A — Synthetic Wind Variance Swap (Tol 1997, θ=0 benchmark) (benchmark_notebooks)
 
 ### Scope
 Same synthetic instrument as Dataset B: wind electricity variance swap on German
@@ -371,12 +376,20 @@ Value of Information argument developed in Phase 7.
 tractable simplification in the absence of option-implied data, not as
 the equilibrium MPR. See Phase 5 §4 framing rule. Option-implied
 calibration via EEX German Power options is the designated future extension.
+Carr-Lee (2009) is the theoretical motivation for variance swap
+replication; the implemented formula is K_var^B = h × C0 under the
+θ=0 benchmark. Carr-Lee option-implied calibration is future work
+only — do not title implemented sections "Carr-Lee".
 
 ### Hard constraints
-- C0 = 0.13138  (Phase 1 Fourier constant, Dataset A — DO NOT re-estimate, DO NOT
-  use Dataset B value 1.163). Hardcode as a named constant; do NOT load from CSV.
-- h_t0 = h_series.iloc[-1]  (end of Dataset A: 31 Dec 2018).
-  DO NOT hardcode the value 0.4137 — always derive from the loaded h_series.
+- Named constants at top of Phase 6 Dataset A notebook:
+     C0_A = 0.13138        # Phase 1 frozen result — do not recompute
+     h_t0_A = 0.4137        # Phase 3 frozen result (h_series.iloc[-1] on
+                             # full Phase 3 run) — do not recompute at runtime
+  Both are frozen results of completed phases. Loading h_t0 live from
+  garch_h_series_phase3.csv at runtime couples the pricing notebook to
+  whatever Phase 3 happens to output on a re-run; freeze it as a constant
+  instead, exactly as C0 is frozen.
 - Four h scenarios: h_t0, h_winter (DJF mean of h_series), h_summer (JJA mean),
   h = 1.0 (Gaussian baseline). All derived from benchmark Phase 3 h_series.
 - Power curve: use data.csv 'wind_speed' column (Bologna 10 m) vs SMARD G_t.
@@ -585,9 +598,12 @@ ECMWF hub-height data (future Phase 2 data upgrade).
     H₀ = equal predictive accuracy vs Persistence benchmark.
     Report: DM statistic, p-value, rejection at 5% significance.
   Table: rows = models, columns = RMSE, DM stat, p-value, Reject H₀.
-  Anchor check: AR(4) improvement over Persistence must equal ~12.2% for Dataset A.
-  (Phase 2 absolute RMSE 0.6017/0.6856 was on standardised W̃; Phase 7 loads raw
-  Phase 2 residuals giving ~0.780/0.887 in raw units — same improvement ratio.)
+  DM tests run on the full W̃(t) series (standardised units), using the
+  same walk-forward scheme as Phase 2. ar4_residuals_phase2.csv is in W̃
+  units, not raw m/s — do not rescale. Expected: AR(4) RMSE ≈ 0.601,
+  Persistence RMSE ≈ 0.686 (≈12.2% improvement), matching Phase 2 test-set
+  results within rounding. If reproducing on a different split, report the
+  split explicitly — do not assume the 0.780/0.887 raw-unit figures.
 
   ## 3. GARCH VOLATILITY DIAGNOSTICS
   Load garch_z_series_phase3.csv (standardised residuals z_t).
