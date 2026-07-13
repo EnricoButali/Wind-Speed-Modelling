@@ -1,0 +1,332 @@
+\documentclass[11pt, a4paper, twoside]{article}
+
+\usepackage{inputenc}
+\usepackage[a4paper, left=1.5in, right=1.5in, top=1in, bottom=1in]{geometry}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{booktabs, tabularx, array}
+\usepackage{graphicx, caption, subcaption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+\usepackage{newtxtext, newtxmath}
+\usepackage{setspace}
+\onehalfspacing
+
+\title{\textbf{Chapter 1 --- Introduction, Literature Review and Data}\\[4pt]
+\large Continuous-Time Modelling of Wind Speed for Derivatives Pricing and Risk Management}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Motivation and Background}
+\label{sec:motivation}
+
+Wind is not a traded asset. It cannot be stored, its delivery cannot be guaranteed, and no counterparty can be compelled to supply it on demand. Yet an entire class of energy-market participants, from onshore wind producers and transmission system operators to portfolio managers hedging renewable-heavy generation mixes, carries direct financial exposure to its fluctuations. This is the defining tension of weather-linked risk management: the underlying quantity that determines cash flow is physical and non-tradable, while the instruments used to hedge it must nonetheless be priced, marked to market, and settled in monetary terms. Wind speed is, in this sense, a natural candidate for derivative pricing methodology precisely because it resists the standard toolkit built for financial underlyings.
+
+For a German onshore wind producer, this exposure is not a single risk but two compounding ones. The first is volumetric: low-wind periods reduce generation directly, and because wind speed is mean-reverting and seasonally heteroskedastic rather than i.i.d., a run of calm days is not diversified away by the following week. The second is a price risk that is correlated with, rather than independent of, the first: German day-ahead electricity prices exhibit a well-documented merit-order effect, in which episodes of high aggregate wind generation push low-marginal-cost supply onto the grid and depress the clearing price precisely when producers are generating the most. The two risks reinforce rather than offset each other: revenue falls when wind is low, and the price received per unit of output that is generated falls disproportionately when wind is high. A derivative written on wind speed itself, rather than on the electricity price alone, is one of the few instruments that can address the volumetric leg of this exposure directly.
+
+The economic stakes are not abstract. To illustrate the order of magnitude involved, consider a representative 100~MW onshore wind farm operating at the capacity factor computed for the Nordfriesland site in Section~\ref{sec:data-b} (25.70\%, from the Weibull-based annual energy production baseline). Annual generation is then $100~\text{MW} \times 8{,}760~\text{h} \times 0.257 \approx 225{,}100$~MWh. The mean German day-ahead price computed directly from the SMARD dataset used in this thesis (Section~\ref{sec:data-smard}) differs sharply across three windows: \euro{}34.60/MWh for the 2015--2020 subsample, \euro{}126.47/MWh for the 2021--2024 subsample (inflated by the European energy-price crisis), and \euro{}71.38/MWh over the full 2015--2024 sample. Applying these three prices to the illustrative farm gives an annual revenue of roughly \euro{}7.8 million, \euro{}28.5 million, and \euro{}16.1 million respectively. These figures are offered strictly as an order-of-magnitude illustration, built transparently from a stated capacity factor and observed price data, not as a precise valuation of any actual asset. Depending on the price regime assumed, they span roughly \euro{}8--29 million per year for a single mid-sized farm; a partial mispricing of a hedging instrument written against this revenue stream is therefore economically material long before one reaches portfolio scale.\footnote{Some of the RAship's working documents (the Phase~7 Dataset~A analysis) refer informally to a benchmark of ``a 100~MW wind farm generating approximately \euro{}50 million in annual revenue.'' The grounded calculation above, built from the sourced 25.7\% capacity factor and the SMARD-observed day-ahead price series, does not reproduce that figure under any of the three price windows considered; it is presented here for the supervisor's attention rather than silently reconciled with the earlier informal estimate.}
+
+Two features of the German market make it a natural setting for this study. First, Nordfriesland, on Germany's North Sea coast in Schleswig-Holstein, is the country's highest-density onshore wind corridor, and its geographic centroid is a reasonable proxy for the aggregate wind generation fleet reported by the German transmission system operators' joint platform, SMARD (Bundesnetzagentur, \url{smard.de}). Second, the European Energy Exchange (EEX) lists the most liquid German power options market in Europe, providing at least the theoretical possibility of extracting a market-implied price of risk for wind-linked instruments (though, as discussed in Section~\ref{sec:data-smard} and revisited under the $\theta = 0$ benchmark assumption in Chapter~2, no such option-implied calibration is attempted in this thesis). Together, these two facts motivate treating Nordfriesland hub-height wind as the reference underlying for a derivatives-pricing exercise grounded in German electricity market structure, rather than as an arbitrary meteorological time series.
+
+The modelling programme that this thesis reports on was not designed around Nordfriesland data from the outset. It began, for reasons of data availability, on a considerably more modest proxy: four years of 10~m anemometer readings for Bologna, Italy, obtained via the OpenWeatherMap API (Section~\ref{sec:data-a}). Every methodological step, from the Box--Cox transformation and the AR(4)/CAR(4) mean dynamics to the GARCH(1,1) volatility layer and the stochastic-volatility embedding, was built, tested, and validated on this proxy dataset before being applied, unchanged in its functional form, to the Nordfriesland reference data. This two-dataset structure is deliberate rather than incidental: it allows the thesis to separate two questions that are usually conflated in applied derivatives work, namely whether the \emph{methodology} is correct and whether the \emph{data} it is fed are fit for purpose. Chapter~3 turns this separation into a quantitative argument, the Value of Information, that measures the pricing error attributable to using a geographically and physically misaligned proxy instead of an aligned reference dataset.
+
+\section{Research Questions and Contribution}
+\label{sec:rqs}
+
+The thesis is organised around three research questions.
+
+\begin{description}
+\item[RQ1.] Can a continuous-time autoregressive model of order four, CAR(4), combined with a GARCH(1,1) conditional-volatility layer and calibrated on wind speed data aligned in both geography and measurement height with the underlying being hedged, be used to price a synthetic wind variance swap in closed or semi-closed form?
+\item[RQ2.] What is the Value of Information, defined as the quantifiable pricing error avoided, from upgrading a geographically and physically misaligned proxy dataset (Bologna, 10~m) to a reference dataset aligned with the German onshore wind fleet (Nordfriesland, 100~m hub height)?
+\item[RQ3.] How effective is a Cumulative Accumulated Wind Speed (CAWS) instrument as a left-tail hedge against sustained low-wind conditions, and how does its effectiveness compare across the proxy and reference datasets?
+\end{description}
+
+RQ1 is addressed methodologically in Chapter~2, which develops the full modelling pipeline from raw wind speed to a continuous-time stochastic-volatility representation, and applied in Chapter~3, which uses the resulting parameters to price a synthetic variance swap under the Tol (1997) piecewise-constant-volatility framework. RQ2 and RQ3 are addressed in Chapter~3, where the cross-dataset validation exercise (Diebold--Mariano forecast tests, the Value of Information comparison, and the CAWS hedging simulation) is carried out on both datasets side by side.
+
+The contribution of the thesis is threefold. First, it builds and validates a full wind-speed modelling pipeline, comprising deseasonalisation, autoregressive mean dynamics, conditional volatility, continuous-time embedding, and a stochastic-volatility extension, on a low-cost proxy dataset before deploying it, without re-specification, on a geographically aligned reference dataset. This separates methodological validation from data-quality concerns in a way that is rarely made explicit in the applied weather-derivatives literature. Second, it produces an explicit, quantified Value of Information estimate for the geographic-and-height alignment decision, expressed both as a raw pricing gap and, after applying a wind-profile height correction, as the gap that survives height adjustment. That residual gap is itself informative: it shows that geographic climate mismatch, not measurement height alone, is the dominant source of proxy-data pricing error. Third, it constructs and stress-tests a CAWS-based hedging instrument as a left-tail complement to the variance swap, evaluated on non-overlapping annual observations to avoid the serial-correlation bias that overlapping rolling windows would otherwise introduce into the risk metrics.
+
+\section{Literature Review}
+\label{sec:litreview}
+
+The methodology developed in this thesis draws on six distinct strands of literature, corresponding to the six successive layers of the modelling pipeline described in Chapter~2: the marginal statistical properties of wind speed, discrete-time forecasting models, conditional-volatility modelling, continuous-time and Lévy-driven processes, stochastic-volatility option-pricing theory, and, finally, weather and energy derivatives pricing under an explicit market price of risk. This section reviews each strand in turn and closes with a statement of the specific gap this thesis addresses.
+
+\subsection{Statistical Properties of Wind Speed}
+\label{sec:lit-stats}
+
+The starting point for any statistical treatment of wind speed is the observation that it is a positive, right-skewed, seasonally heteroskedastic quantity, and therefore not amenable to Gaussian time-series methods without a preliminary transformation. \citet{TullerBrett1984} provide the classical physical justification for the marginal distribution most commonly used to describe it. Their argument proceeds from first principles: if the two horizontal components of the wind velocity vector are independently and identically normally distributed with zero mean and equal variance (a reasonable approximation for wind in the free atmosphere, away from surface friction effects), then the magnitude of the vector, which is what an anemometer records, follows a Weibull distribution with shape parameter $k = 2$, the Rayleigh special case. More generally, departures from this idealised isotropy produce Weibull-distributed speeds with $k$ in the neighbourhood of two but not necessarily equal to it. This is a genuinely physical derivation, not merely a curve-fitting convention, and it explains why the Weibull distribution has become the default parametric choice in wind-resource assessment.
+
+\citet{Garcia1998} test this claim empirically across twenty meteorological stations in Navarre, Spain, comparing Weibull and lognormal fits to hourly-mean wind speed via a log-log linearisation of the Weibull cumulative distribution function (the ``Weibull probability paper'' method) and nonlinear regression for the lognormal alternative. They find the Weibull distribution provides a materially better fit at essentially all stations, with $R^2$ values in the high-0.90s versus the high-0.80s for the lognormal, and they use the fitted distributions to estimate wind-farm energy production, establishing the now-standard link between the marginal distribution and the integral of a turbine power curve against its density. Their result is a useful benchmark against which to read the distributional analysis conducted on the two datasets used in this thesis (Section~\ref{sec:data}): the Weibull distribution is confirmed as the better fit for the hub-height Nordfriesland reference dataset, consistent with \citet{Garcia1998} and \citet{TullerBrett1984}, whereas the 10~m Bologna proxy dataset is better described by a lognormal distribution, a departure from the Weibull consensus that Chapter~2 attributes to the proxy's low measurement height, where surface-layer friction and diurnal boundary-layer effects violate the isotropy assumption underlying the Rayleigh--Weibull derivation.
+
+\subsection{Time-Series Models and Long Memory}
+\label{sec:lit-timeseries}
+
+Once the marginal distribution and the deterministic seasonal component have been dealt with, the residual dynamics of wind speed remain strongly autocorrelated, and a substantial literature has developed autoregressive and long-memory models to capture this. \citet{Torres2005} fit month-specific ARMA models to hourly wind speed at five Navarre stations after a Weibull-shape-based power transformation and per-hour standardisation, and show that ARMA forecasts significantly outperform the naive persistence benchmark, particularly beyond the first few forecasting horizons, although the improvement narrows as the horizon lengthens. This paper establishes both the transform-then-model pipeline adopted throughout the present thesis and a natural point of comparison for the incremental value of the AR(4) model over persistence reported in Chapter~2.
+
+A parallel strand of the literature asks whether wind speed exhibits long memory (autocorrelation that decays hyperbolically rather than exponentially), which would argue for a fractionally integrated ARFIMA specification rather than a finite-order AR or ARMA model. \citet{HaslettRaftery1989}, in one of the earliest and most influential papers in this tradition, model daily wind speed across twelve Irish synoptic stations by combining spatial kriging with a fractionally differenced temporal component on the square-root-transformed series, and show that naive short-memory estimators materially understate the standard errors of long-run wind-power assessments once long-range dependence is properly accounted for. \citet{KavasseriSeetharaman2009} apply fractional ARIMA models directly to day-ahead wind speed forecasting at four North Dakota sites, reporting an average 42\% reduction in forecast mean squared error relative to a persistence benchmark and consistent gains over standard (short-memory) ARIMA. \citet{AilliotEtAl2006} take a different route to capturing structure beyond a fixed-coefficient AR model, proposing a Markov-switching autoregression with time-varying spatial coefficients to track the translation of synoptic weather systems across a wind field, calibrated on ECMWF North Atlantic hindcast data. Their application is spatial rather than the single-location setting used in this thesis, but the underlying idea, that AR coefficients should be allowed to vary with the state of the system rather than held fixed, foreshadows the seasonally modulated and stochastic-volatility extensions developed in Chapter~2.
+
+Taken together, this cluster motivates a specific modelling choice made in Chapter~2: an AR(4)/ARFIMA order-selection exercise is carried out on both datasets used in this thesis, following the diagnostic logic of \citet{HaslettRaftery1989} and \citet{KavasseriSeetharaman2009}, but the finite-order AR(4) specification is ultimately retained as the operating model because it embeds directly into the continuous-time CAR(4) framework of Section~\ref{sec:lit-continuous} without requiring a separate fractional-integration apparatus, and because the long-memory evidence on the datasets in this thesis, reported in Chapter~2, does not decisively favour the more heavily parameterised alternative.
+
+\subsection{Conditional Volatility}
+\label{sec:lit-volatility}
+
+The residuals of an AR model fit to deseasonalised wind speed are typically not homoskedastic: calm periods and volatile periods cluster in time, in the same way that volatility clusters in financial return series. The tools for modelling this clustering originate in econometrics. \citet{Engle1982} introduces the autoregressive conditional heteroskedasticity (ARCH) process, in which the conditional variance of a serially uncorrelated, zero-mean process is itself an autoregressive function of past squared innovations; Engle motivates the model with UK inflation data and develops both a maximum-likelihood estimator and a Lagrange-multiplier test for the presence of ARCH effects that remains the standard pre-estimation diagnostic to this day. \citet{Bollerslev1986} generalises ARCH to GARCH by allowing the conditional variance to depend on its own lagged values as well as on lagged squared innovations (the volatility analogue of extending an AR model to an ARMA model), and shows that a low-order GARCH$(1,1)$ specification typically achieves the same fit as a much higher-order ARCH model with far fewer parameters. GARCH$(1,1)$ is the specification adopted for the conditional-volatility layer $h(t)$ throughout this thesis.
+
+\citet{Tol1997} is the paper that transplants this machinery specifically into wind speed modelling. Working with daily wind data from Shearwater, Canada, Tol fits Gamma-AR(2)-GARCH(1,1) and Normal-AR(2)-GARCH(1,1) specifications and demonstrates that the heteroskedastic model outperforms a homoskedastic AR-only benchmark, with the ARCH effect noticeably stronger in the underlying wind velocity components than in the scalar wind speed series itself. This is the direct precedent for the two-component volatility decomposition used throughout this thesis, $\sigma^2_{\text{total}}(t) = \sigma^2_{\text{seasonal}}(t) \times h(t)$, in which a deterministic Fourier-based seasonal variance is multiplied by a GARCH$(1,1)$ conditional-variance factor. It is also the origin of the piecewise-constant-volatility pricing convention, fixing $h(t)$ at its value at the pricing date $t_0$ for the life of the contract, that underlies the synthetic variance swap priced in Chapter~3.
+
+\subsection{Continuous-Time and Lévy-Driven Processes}
+\label{sec:lit-continuous}
+
+Discrete-time AR and GARCH models are estimated on daily data, but a derivative contract must in general be priced at an arbitrary maturity that does not fall on a daily grid point, which motivates embedding the discrete-time dynamics into a continuous-time stochastic process. \citet{BrockwellMarquardt2005} provide the mathematical foundation for this step, developing the theory of Lévy-driven continuous-time ARMA (CARMA) processes: state-space representations built around a companion matrix $A$ and driven by an arbitrary second-order Lévy process rather than Brownian motion, which allows the resulting marginal distributions to be asymmetric and heavy-tailed rather than Gaussian. They further construct a fractionally integrated extension (FICARMA) by convolving the CARMA kernel with a Riemann--Liouville fractional-integration kernel, connecting the long-memory literature reviewed in Section~\ref{sec:lit-timeseries} to the continuous-time state-space formalism used in Chapter~2's CAR(4) construction: the companion matrix $A$, its eigenvalues, and the matrix exponential $\exp(A\tau)$ that propagates the conditional mean forward in time are all direct applications of this framework.
+
+\citet{Schwartz1997} supplies the connection to commodity-derivatives pricing specifically.\footnote{The PDF held in this project's reference library for \citet{Schwartz1997} is an image-only scan with no extractable text layer, and no OCR tool was available in the working environment used to prepare this chapter to verify its content directly. The bibliographic details cited here, \emph{Journal of Finance} 52(3), pp.~923--973, 1997, reflect the paper's well-established standard citation in the commodity-derivatives literature and its role as one of the two companion papers (with \citet{Heston1993}) explicitly named in the Phase~5 stochastic-volatility chapter of the underlying research programme, rather than an independent re-verification against this specific file. The supervisor may wish to confirm this citation against an alternative copy before submission.} Schwartz compares one-, two-, and three-factor models of commodity spot prices, respectively a simple mean-reverting (Ornstein--Uhlenbeck) process, a model adding a stochastic convenience yield, and a model further adding stochastic interest rates, and evaluates their implications for the term structure of futures prices and for hedging performance. The single-factor Ornstein--Uhlenbeck specification in Schwartz's framework is, in essence, the $p=1$ special case of the CAR$(p)$ family used in this thesis, and its treatment of mean reversion under a risk-neutral measure is a direct precedent for the wind-futures pricing framework developed by \citet{BenthSaltyteBenth2009} and adopted, under the $\theta = 0$ benchmark described in Section~\ref{sec:lit-derivatives}, in Chapter~2.
+
+\citet{BarndorffNielsenShephard2001} extend the non-Gaussian Ornstein--Uhlenbeck idea to stochastic volatility directly, constructing a volatility process driven by a positive Lévy subordinator (the background driving Lévy process) rather than a Brownian motion, so that returns become Gaussian mixtures capable of reproducing heavy tails and volatility clustering while retaining closed-form results for integrated volatility and its temporal aggregation. This paper is the theoretical bridge between the GARCH-based discrete-time volatility proxy $h(t)$ used in Chapters 2--3 of this thesis and the continuous-time variance process $V(t)$ introduced in the stochastic-volatility extension of Chapter~2: it demonstrates formally that a GARCH-type discrete filter can be understood as a discretisation of an underlying continuous semimartingale, which is precisely the conceptual step motivating the two-SDE system developed there.
+
+\subsection{Stochastic Volatility}
+\label{sec:lit-sv}
+
+\citet{Heston1993} is the canonical reference for stochastic-volatility option pricing and supplies the mathematical template for the two-SDE system used in the theoretical stochastic-volatility chapter of this thesis. Heston models the variance of an asset's return as a square-root (Cox--Ingersoll--Ross-type) process correlated with the return innovation itself, and derives a closed-form European option price via Fourier inversion of the joint characteristic function rather than by solving the pricing partial differential equation directly. This technique generalises immediately to other payoffs, including the variance-swap-style contract priced in Chapter~3 of this thesis. Heston's framework requires two conditions to be satisfied for the model to be well posed: the Feller condition, which guarantees that the variance process remains strictly positive almost surely, and a specification of the market price of volatility risk connecting the physical and risk-neutral dynamics of the variance process. Chapter~2 of this thesis adopts Heston's two-SDE structure, a wind-speed level process and a CIR-type variance process coupled through the Feller condition, as a theoretical (not estimated) extension of the GARCH-based volatility model, for the reasons discussed under the gap statement in Section~\ref{sec:lit-gap}.
+
+\subsection{Weather and Energy Derivatives, and the Market Price of Risk}
+\label{sec:lit-derivatives}
+
+The applied weather-derivatives literature translates the statistical machinery reviewed above into pricing formulas for non-tradable underlyings, and it is here that the question of the market price of risk becomes unavoidable. \citet{AlatonEtAl2002} provide an accessible template: they fit an Ornstein--Uhlenbeck process with piecewise (monthly) seasonal variance to Stockholm temperature data, estimate it via martingale estimating functions applicable to discretely observed diffusions, and price temperature-index derivatives (heating- and cooling-degree-day contracts) both by an analytic approximation and by Monte Carlo simulation. Because temperature, like wind speed, is not a traded asset, the pricing measure cannot be pinned down by a replication argument in the usual Black--Scholes sense, and Alaton, Djehiche and Stillberger introduce an explicit, generally non-zero market price of risk parameter to complete the model in this incomplete-market setting.
+
+\citet{BenthSaltyteBenth2009} extend this OU-based approach specifically to wind speed, embedding a Box--Cox-transformed, seasonally adjusted daily wind speed series into a CAR$(p)$ state-space model with seasonal mean and seasonal volatility, calibrated on New York wind data using an AR(4) specification with Box--Cox parameter $\lambda \in \{0.1, 0.2\}$. They derive closed-form wind futures prices as conditional expectations of the CAR state vector under a chosen pricing measure, and, notably, they show that the classical Samuelson effect, the tendency of futures price volatility to increase as the contract approaches maturity, can break down or reverse for autoregressive orders $p > 1$, a consequence of the long memory embedded in a higher-order autoregressive structure that has no analogue in the single-factor Schwartz-type model. This paper is the direct methodological template for the CAR(4) construction, the Box--Cox transformation, and the Euler-discretisation link between the discrete AR(4) and continuous-time CAR(4) representations used throughout Chapter~2 of this thesis.
+
+The question of how to specify the market price of risk $\theta$ in this incomplete-market setting is addressed empirically by two further papers. \citet{HardleLopezCabrera2009} infer the market price of weather risk implicitly from Chicago Mercantile Exchange-traded Berlin cumulative-temperature futures, modelling both piecewise-constant and time-varying specifications, and find that the implied market price of risk is significantly different from zero and displays a clear seasonal pattern. \citet{DorfleitnerWimmer2010} conduct a related empirical exercise on CME temperature futures directly, comparing detrended and non-detrended index models against observed market prices and showing that a simple non-detrending specification tracks quoted futures prices closely, that weather forecasts materially move prices up to eleven days ahead of settlement, and that a mismodelled seasonal trend produces systematic, exploitable mispricing across the winter and summer contract cycle. Both papers demonstrate that, where reliable option-implied or futures-implied price data exist, the market price of risk for a weather-linked underlying is empirically estimable and generally non-zero.
+
+\citet{AlexandridisZapranis2013} return to wind speed specifically and are the direct source for the two index conventions used in the pricing exercise of this thesis. They model daily wind speed with a non-parametric wavelet-network layer superimposed on a mean-reverting, seasonally adjusted Ornstein--Uhlenbeck process, benchmark it against the linear CAR-type approach of \citet{BenthSaltyteBenth2009}, and find that the wavelet-network specification materially improves in- and out-of-sample fit. More directly relevant to this thesis, they derive closed-form futures pricing formulas for two wind indices: the Nordix index and the Cumulative Average Wind Speed (CAWS) index, the latter of which is adopted, in the accumulated-and-normalised form defined in Section~\ref{sec:data} and Chapter~3, as the left-tail hedging instrument evaluated in this thesis.
+
+Finally, \citet{CarrLee2009} provide the theoretical foundation for variance-swap replication that motivates, without directly supplying, the implemented pricing formula used in Chapter~3 of this thesis. Their review formalises the classical result that a variance swap can be synthetically replicated by a static position in a log-contract combined with dynamic delta-hedging in the underlying, quantifies the higher-order replication error incurred when this hedge is only discretely rebalanced, and shows that the floating leg of a continuously monitored variance swap corresponds to a moneyness-weighted average of implied volatilities across the option surface: the same logic that underlies the construction of the VIX index. This replication argument requires a liquid market in options on the underlying, which does not exist for German wind speed or wind generation. The only actively traded wind derivatives, the Nordix futures referenced by \citet{AlexandridisZapranis2013}, are written on Norwegian rather than German wind, and no options market exists for the Nordfriesland-aligned SMARD generation series used in this thesis. In the absence of this option-implied information, the variance swap priced in Chapter~3 does not attempt Carr--Lee-style replication; instead, it follows the closed-form, model-implied formula of \citet{Tol1997}, $K_{\text{var}}^B = h \times C_0$, under the explicit benchmark assumption $\theta = 0$ described in Chapter~2. This benchmark is adopted deliberately, as a tractable simplification given the absence of EEX option-implied data for this specific underlying, and not as a claim that the market price of risk for wind-linked instruments is in fact zero. The evidence from \citet{HardleLopezCabrera2009} and \citet{DorfleitnerWimmer2010}, reviewed above for a related but distinct underlying, would in any case not support such a claim. Carr and Lee's framework remains, in this thesis, the designated theoretical motivation for a future extension in which $\theta$ is calibrated to EEX German power options, rather than the model actually estimated.
+
+\subsection{Gap Statement}
+\label{sec:lit-gap}
+
+Read together, this literature establishes a well-developed toolkit: Weibull/lognormal marginal fitting, AR/ARFIMA mean dynamics, GARCH conditional volatility, CAR$(p)$ continuous-time embedding, Heston-type stochastic volatility, and OU-based weather-derivatives pricing under an explicit market price of risk. Three gaps in that toolkit remain, and this thesis addresses each of them directly.
+
+First, the wind-derivatives literature reviewed in Section~\ref{sec:lit-derivatives} is calibrated either on temperature (a more heavily studied underlying with a longer exchange-traded history) or on wind speed measured at a location and height that need not correspond to the generation asset actually being hedged. \citet{BenthSaltyteBenth2009} and \citet{AlexandridisZapranis2013} both calibrate on New York data; neither is calibrated on wind speed that is simultaneously (i) measured at or near turbine hub height and (ii) geographically aligned with a specific, actively traded generation aggregate. This thesis addresses that gap directly by using ERA5 reanalysis wind speed at 100~m hub height over the Nordfriesland corridor, the geographic centroid of the SMARD German onshore wind generation series against which the pricing exercise in Chapter~3 is ultimately validated.
+
+Second, no paper in this review quantifies, in the same modelling framework, the pricing cost of using a geographically or physically misaligned proxy dataset instead of an aligned one. The literature on model comparison (Section~\ref{sec:lit-volatility}) and long-memory model selection (Section~\ref{sec:lit-timeseries}) is concerned with comparing model specifications on a fixed dataset, not with comparing the same model specification across two datasets of differing quality. Chapter~3's Value of Information exercise, pricing the identical CAR(4)+GARCH variance swap on both the Bologna proxy and the Nordfriesland reference dataset and measuring the resulting gap before and after a wind-profile height correction, is designed specifically to fill this gap, and constitutes the thesis's primary methodological contribution.
+
+Third, the stochastic-volatility literature (Section~\ref{sec:lit-sv}) generally estimates the variance-process parameters $(\kappa_V, \bar v, \xi, \rho)$ from either high-frequency data or option-implied information, neither of which is available here: the two datasets used in this thesis are daily, and no liquid options market exists on German wind speed or on the SMARD generation aggregate. Chapter~2 therefore develops the Heston-type stochastic-volatility system as a theoretical embedding of the GARCH proxy, verifying the Feller condition numerically and deriving the variance term structure in closed form, while explicitly deferring maximum-likelihood estimation of the full stochastic-volatility parameter set to a future extension using higher-frequency (e.g.\ hourly ECMWF) data, a limitation discussed further in Chapter~3.
+
+\section{Data}
+\label{sec:data}
+
+This thesis draws on three data sources, used in complementary roles: two independent wind speed datasets (a proxy dataset on which the modelling methodology is built and validated, and a reference dataset on which the headline empirical results rest) and a market dataset of German electricity generation and prices used to construct the synthetic derivative priced in Chapter~3. All three are described here in full so that the cross-dataset comparisons that recur throughout Chapters 2 and 3 can be read against a single, common description rather than being re-explained piecemeal in each subsequent chapter.
+
+\subsection{Dataset A: Bologna Proxy (10~m, 2015--2018)}
+\label{sec:data-a}
+
+Dataset A consists of hourly wind speed observations for the Bologna area, Italy (approximately 44.29\textdegree{}N, 11.2\textdegree{}E), obtained via the OpenWeatherMap API and distributed through the \texttt{beniamino98/greenfin-project} GitHub repository, at a nominal measurement height of 10~m. The raw file (\texttt{data/data.csv}) contains 35{,}064 hourly observations spanning 31~December~2014 to 31~December~2018 with no missing values; aggregating by arithmetic mean within each calendar day yields $n = 1{,}462$ daily average wind speed observations covering four complete calendar years, 2015--2018.
+
+Table~\ref{tab:desc-a} reports the descriptive statistics computed for this series. Every diagnostic points to the same conclusion: raw daily wind speed at this site is strongly non-Gaussian. The mean exceeds the median by roughly 0.23~m/s, confirming a right-skewed distribution consistent with a physical lower bound near zero and an unbounded right tail driven by occasional storm days; skewness of $+1.76$ and excess kurtosis of $+4.74$ are both far from the Gaussian values of zero, and the Jarque--Bera statistic of 2{,}122 against a $\chi^2(2)$ critical value near 6 rejects normality overwhelmingly.
+
+\begin{table}[htbp]
+\centering
+\caption{Descriptive statistics, raw daily average wind speed, Dataset A (Bologna, 10~m, 2015--2018).}
+\label{tab:desc-a}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Statistic} & \textbf{Value} & \textbf{Note} \\
+\midrule
+$n$ & 1{,}462 & daily observations \\
+Mean & 2.4687 m/s & \\
+Median & 2.2417 m/s & mean $>$ median $\Rightarrow$ right skew \\
+Std.\ deviation & 0.9481 m/s & \\
+Minimum / Maximum & 0.9333 / 9.1125 m/s & no calm daily averages \\
+Skewness & $+1.7616$ & Gaussian $= 0$ \\
+Excess kurtosis & $+4.7351$ & Gaussian $= 0$ \\
+Jarque--Bera $p$-value & $< 0.000001$ & normality strongly rejected \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A Weibull distribution fit by maximum likelihood gives shape $\hat k = 2.64$ and scale $\hat c = 2.77$~m/s, close to the $k \approx 2$ neighbourhood predicted by the \citet{TullerBrett1984} argument reviewed in Section~\ref{sec:lit-stats}; however, on an AIC/BIC comparison against a lognormal fit ($\hat m = 0.84$, $\hat s = 0.34$), the lognormal wins decisively (log-likelihood $-1{,}730.6$ versus $-1{,}960.5$ for the Weibull, a gap of roughly 460 AIC units). This is a genuine departure from the \citet{TullerBrett1984}--\citet{Garcia1998} consensus, attributed, in the underlying analysis this chapter draws on, to the 10~m measurement height: the isotropy assumption behind the Rayleigh--Weibull derivation is a free-atmosphere approximation, progressively violated by surface friction and diurnal boundary-layer effects closer to the ground, and the lognormal's thinner left tail better matches the empirical absence of near-zero daily averages at this height.
+
+The Box--Cox transformation (Section~\ref{sec:lit-stats}) is applied to bring the series toward normality. The likelihood-maximising value is $\lambda_{\text{opt}} = -0.450$, which achieves near-perfect Gaussianisation (skewness $-0.005$, excess kurtosis $+0.128$, Jarque--Bera $p = 0.606$); however, the closed-form pricing formulas used in later phases require $1/\lambda$ to be a positive integer, and $-0.450$ does not satisfy this constraint. The nearest tractable value, $\lambda = 0.1$ (so that $1/\lambda = 10$), is adopted as the frozen working parameter for this dataset throughout the thesis, at the cost of leaving a residual right skew (skewness $0.601$, Jarque--Bera $p \approx 0$) that the seasonal-mean and seasonal-variance decomposition and the AR(4) fit of Chapter~2 subsequently reduce further. After the truncated Fourier decomposition into a seasonal mean $\Lambda(t)$ (annual harmonic dominant, $R^2 = 0.126$) and a seasonal variance $\sigma^2(t)$ (mean level $C_0 = 0.13138$, winter-to-summer ratio of roughly six to one, $R^2 = 0.226$), the resulting standardised series $\widetilde W(t)$ has mean $0.001$ and standard deviation $0.967$, close to the zero-mean, unit-variance target, but retains significant serial autocorrelation and conditional heteroskedasticity (Ljung--Box $p < 0.001$ on both $\widetilde W(t)$ and $\widetilde W(t)^2$ at all tested lags), which motivates the AR(4) and GARCH(1,1) layers developed in Chapter~2.
+
+Because Dataset A is recorded at 10~m rather than at a representative turbine hub height, and because its four-year window is short relative to the multi-decade samples used in the wind-derivatives literature reviewed in Section~\ref{sec:lit-derivatives}, it is treated throughout this thesis strictly as a \emph{proxy}: a low-cost dataset on which every stage of the modelling pipeline is developed and validated before being applied, without re-specification, to the reference dataset described next.
+
+\subsection{Dataset B: Nordfriesland Reference (100~m, 2015--2024)}
+\label{sec:data-b}
+
+Dataset B consists of daily wind speed at 100~m hub height for Nordfriesland, Schleswig-Holstein, Germany (54.77\textdegree{}N, 8.85\textdegree{}E), obtained from the Open-Meteo Historical Weather API, which serves ERA5 reanalysis output. The 100~m variable (\texttt{wind\_speed\_100m}) is extracted directly from the reanalysis and requires no vertical-profile correction, since it is a direct model output rather than a surface-station reading extrapolated to hub height. Two companion series are retained for validation and future regime analysis: \texttt{wind\_speed\_10m}, used as a consistency check against the primary series, and \texttt{wind\_direction\_100m}, retained for possible directional-regime analysis beyond the scope of this thesis. The sample spans ten full calendar years, 2015--2024, comprising 3{,}653 daily observations in the underlying phase analysis (the CLAUDE.md project specification and the cross-dataset table below use the rounded figure of 3{,}652 observations; the one-day difference is immaterial to any result reported in this thesis and reflects only an inclusive/exclusive endpoint convention in the daily-aggregation step).
+
+Table~\ref{tab:desc-b} reports the corresponding descriptive statistics. The mean wind speed of 8.07~m/s is roughly 3.3 times the Dataset A mean, consistent with the combined effect of hub height and a genuinely windier geographic location; skewness ($+0.585$) and excess kurtosis ($+0.111$) are both markedly closer to Gaussian values than Dataset A's, though the Jarque--Bera test still rejects normality at conventional levels.
+
+\begin{table}[htbp]
+\centering
+\caption{Descriptive statistics, raw daily wind speed, Dataset B (Nordfriesland, 100~m, 2015--2024).}
+\label{tab:desc-b}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Statistic} & \textbf{Value} & \textbf{Note} \\
+\midrule
+$n$ & 3{,}653 & daily observations \\
+Mean & 8.068 m/s & \\
+Median & 7.760 m/s & \\
+Std.\ deviation & 3.236 m/s & \\
+Minimum / Maximum & 1.383 / 20.258 m/s & \\
+Skewness & $+0.585$ & Gaussian $= 0$ \\
+Excess kurtosis & $+0.111$ & Gaussian $= 0$ \\
+Jarque--Bera $p$-value & $< 0.001$ & normality rejected \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Consistent with the \citet{TullerBrett1984}--\citet{Garcia1998} consensus, and in contrast with Dataset A, the Weibull distribution ($\hat k = 2.67$, $\hat c = 9.09$) fits Dataset B better than the lognormal on both AIC and BIC. The Box--Cox likelihood is maximised at $\lambda_{\text{opt}} = 0.404$; the tractable value adopted for closed-form pricing is $\lambda = 0.5$ (so $1/\lambda = 2$), a much smaller rounding distance than the one forced on Dataset A, reflecting the higher hub-height mean wind speed's less extreme skew. The Fourier seasonal-mean fit is again dominated by the annual harmonic ($R^2 = 0.103$), and the seasonal-variance fit yields a mean level $C_0 \approx 1.163$ with $\sigma^2(t)$ ranging over $[0.944, 1.463]$, a peak-to-trough modulation of roughly 55\%, calmer in relative terms than the roughly six-to-one winter/summer variance ratio found for Bologna, though both datasets place peak variance in the winter months. The resulting standardised series $\widetilde W(t)$ again passes its basic centring and scaling checks (mean $\approx 0$, standard deviation $\approx 1.005$) while retaining significant autocorrelation in levels and in squares, motivating the same AR(4) and GARCH(1,1) layers applied to Dataset A. As an illustrative application, integrating the fitted Weibull density against the power curve of a representative 3~MW turbine at 100~m hub height yields an annual energy production of 6.753~GWh and a capacity factor of 25.70\%, a figure consistent with onshore wind performance in the North Sea coastal region and the figure used for the illustrative revenue calculation in Section~\ref{sec:motivation}.
+
+Dataset B is used throughout this thesis as the \emph{reference} dataset: it is geographically aligned with the SMARD German onshore wind generation series described next, measured directly at hub height, and long enough (ten years) to support the out-of-sample validation exercise reported in Chapter~3. All headline empirical claims in this thesis (the fitted variance-swap fair strike, the Value of Information estimate, and the CAWS hedging simulation) rest primarily on Dataset B, with Dataset A retained as the benchmark against which the Value of Information is measured.
+
+\subsection{SMARD Generation and EEX Day-Ahead Prices}
+\label{sec:data-smard}
+
+The synthetic derivative priced in Chapter~3 is written on German onshore wind generation, not on wind speed directly, and requires two further data series: hourly wind onshore generation and hourly day-ahead electricity prices, both published by the German transmission system operators' joint platform SMARD (Bundesnetzagentur, \texttt{smard.de}) for the full 2015--2024 window. Generation is delivered across two files, \texttt{Actual\_generation\_1.csv} and \texttt{Actual\_generation\_2.csv}, and prices across \texttt{Day-ahead\_prices\_1.csv} and \texttt{Day-ahead\_prices\_2.csv} (the SMARD file-naming convention uses a hyphen in \texttt{Day-ahead}, not an underscore, a detail that matters only for the reproducibility of the data-loading step but is noted here since it is easy to mistype). All four files are semicolon-separated, UTF-8-with-BOM encoded, and use a comma as the thousands separator, with timestamps in the form \texttt{"Jan~1,~2015~12:00~AM"}; the relevant generation column is labelled \texttt{Wind onshore [MWh] Calculated resolutions}.
+
+The day-ahead price series requires a merge across two market conventions, reflecting a genuine structural break in the underlying market: prior to 1~October~2018, Germany, Austria, and Luxembourg formed a single day-ahead bidding zone, reported in the column \texttt{DE/AT/LU~[\euro{}/MWh]}; from that date, Austria was separated into its own bidding zone following a market-coupling reform, and the German price is reported instead in the column \texttt{Germany/Luxembourg~[\euro{}/MWh]}. The merge rule applied throughout this thesis takes the \texttt{Germany/Luxembourg} column from 1~October~2018 onward and the \texttt{DE/AT/LU} column before that date. Both series are aggregated from hourly to daily frequency: generation as the sum of the 24 hourly values (a flow quantity, MWh/day), price as the arithmetic mean of the 24 hourly values (a level quantity, \euro{}/MWh). Days exhibiting more than 20\% missing hourly observations are dropped rather than imputed.
+
+The resulting daily series (\texttt{smard\_daily\_phase6.csv}) covers 1~January~2015 to 31~December~2024, 3{,}653 daily observations, with a mean national wind onshore generation of 255{,}560~MWh/day (computed directly from the processed file). The corresponding day-ahead price series has a markedly different character before and after the onset of the European energy-price crisis: the mean price over 2015--2020 is \euro{}34.60/MWh, versus \euro{}126.47/MWh over 2021--2024 and \euro{}71.38/MWh over the full ten-year sample. This is the same three-way split used for the illustrative revenue calculation in Section~\ref{sec:motivation}. This structural shift is a genuine feature of the German electricity market over the sample period rather than a data artefact, and Chapter~3 checks explicitly that the merit-order relationship between generation and price (used to motivate wind derivatives as a producer hedge) is not an artefact of the pre/post-2018 bidding-zone split either, by comparing the correlation between generation and price separately on either side of the October 2018 structural break.
+
+\subsection{Cross-Dataset Comparison}
+\label{sec:data-comparison}
+
+Table~\ref{tab:cross-dataset} summarises the two wind speed datasets side by side. It is presented once, here, rather than repeated at the head of every subsequent chapter, and is referred to throughout Chapters 2 and 3 whenever a result is reported for both datasets.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Cross-dataset comparison: Dataset A (proxy) versus Dataset B (reference).}
+\label{tab:cross-dataset}
+\begin{tabularx}{\textwidth}{l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
+\toprule
+& \textbf{Dataset A} & \textbf{Dataset B} \\
+\midrule
+Source & OpenWeatherMap API (\texttt{beniamino98/greenfin-project}) & Open-Meteo Historical Weather API, ERA5 reanalysis \\
+Location & Bologna, Italy (44.29\textdegree{}N, 11.2\textdegree{}E) & Nordfriesland, Germany (54.77\textdegree{}N, 8.85\textdegree{}E) \\
+Height & 10~m & 100~m \\
+Period & 2015--2018 (4~yr, 1{,}462 obs) & 2015--2024 (10~yr, 3{,}652 obs) \\
+Primary variables & \texttt{wind\_speed} (m/s) & \texttt{wind\_speed\_100m}, \texttt{wind\_speed\_10m}, \texttt{wind\_direction\_100m} \\
+Advantages & Freely available; easy to download; sufficient for methodology development and validation & Hub-height (no profile correction needed); geographically aligned with SMARD generation; 10-year window enables out-of-sample validation; ERA5 reanalysis quality \\
+Limitations & Proxy-quality; 10~m height requires profile correction for hub-height comparisons; low-wind site; short (4-year) window & Model-based reanalysis rather than direct anemometer observation; no sub-daily resolution used in this thesis \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The role of this comparison is not merely descriptive. It is the empirical premise for the Value of Information argument developed in Chapter~3: because the two datasets are processed through an \emph{identical} modelling pipeline, any difference in the resulting derivative price can be attributed to the data themselves (their geographic location, height, and sample length) rather than to a difference in model specification. Table~\ref{tab:cross-dataset} is therefore the reference point against which that argument is built, motivating the upgrade from Dataset A to Dataset B that this thesis both executes and quantifies.
+
+\section{Thesis Outline}
+\label{sec:outline}
+
+The remainder of the thesis is organised into two further chapters, followed by a concluding synthesis that closes Chapter~3 rather than standing as a separate chapter.
+
+Chapter~2, \emph{Methodology and Empirical Wind-Speed Modelling}, develops the full modelling pipeline described in Section~\ref{sec:litreview}, phase by phase, presenting Dataset A and Dataset B side by side at each stage: deseasonalisation and the Box--Cox transformation; the AR(4) conditional-mean model and its long-memory diagnostics; the GARCH(1,1) conditional-volatility layer; the continuous-time CAR(4) embedding, including its companion matrix, stationarity properties, and Normal-Inverse-Gaussian tail extension; and, finally, the theoretical stochastic-volatility extension that embeds the GARCH proxy into a Heston-type two-SDE system under the $\theta = 0$ benchmark. Dataset B is treated as the primary result throughout, with Dataset A retained as the validation benchmark on which each modelling choice is first tested.
+
+Chapter~3, \emph{Derivatives Pricing, Risk Management and Conclusions}, applies the calibrated model to answer the three research questions posed in Section~\ref{sec:rqs}. It prices the synthetic wind variance swap of \citet{Tol1997} on both datasets, distinguishing the market-implied Track~A fair strike (realised variance of SMARD generation log-returns) from the model-implied Track~B fair strike ($K_{\text{var}}^B = h \times C_0$); validates the forecasting hierarchy established in Chapter~2 against held-out data using Diebold--Mariano tests; computes the Value of Information from the Dataset~A-to-B upgrade, both before and after a wind-profile height correction restricted strictly to that comparison; evaluates the CAWS hedging instrument introduced by \citet{AlexandridisZapranis2013} as a left-tail complement to the variance swap, using non-overlapping annual observations to avoid the serial-correlation bias that the instrument's overlapping rolling-window construction would otherwise introduce into its risk metrics; and closes with a synthesis chapter that summarises the forecast-model hierarchy, states the limitations of the $\theta = 0$ benchmark and the daily-frequency stochastic-volatility identification problem, and outlines the option-implied and higher-frequency extensions left to future work.
+
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem[Ailliot et al.(2006)Ailliot, Monbet, and Prevosto]{AilliotEtAl2006}
+Ailliot, P., Monbet, V., \& Prevosto, M. (2006).
+An autoregressive model with time-varying coefficients for wind fields.
+\textit{Environmetrics}, 17(2), 107--117.
+
+\bibitem[Alaton et al.(2002)Alaton, Djehiche, and Stillberger]{AlatonEtAl2002}
+Alaton, P., Djehiche, B., \& Stillberger, D. (2002).
+On modelling and pricing weather derivatives.
+\textit{Applied Mathematical Finance}, 9(1), 1--20.
+
+\bibitem[Alexandridis and Zapranis(2013)]{AlexandridisZapranis2013}
+Alexandridis, A., \& Zapranis, A. (2013).
+Wind derivatives: modeling and pricing.
+\textit{Computational Economics}, 41(3), 299--326.
+
+\bibitem[Barndorff-Nielsen and Shephard(2001)]{BarndorffNielsenShephard2001}
+Barndorff-Nielsen, O. E., \& Shephard, N. (2001).
+Non-Gaussian Ornstein--Uhlenbeck-based models and some of their uses in financial economics.
+\textit{Journal of the Royal Statistical Society: Series B}, 63(2), 167--241.
+
+\bibitem[Benth and \v{S}alty\.{t}\.{e} Benth(2009)]{BenthSaltyteBenth2009}
+Benth, F. E., \& \v{S}alty\.{t}\.{e} Benth, J. (2009).
+Dynamic pricing of wind futures.
+\textit{Energy Economics}, 31(1), 16--24.
+
+\bibitem[Bollerslev(1986)]{Bollerslev1986}
+Bollerslev, T. (1986).
+Generalized autoregressive conditional heteroskedasticity.
+\textit{Journal of Econometrics}, 31(3), 307--327.
+
+\bibitem[Brockwell and Marquardt(2005)]{BrockwellMarquardt2005}
+Brockwell, P. J., \& Marquardt, T. (2005).
+L\'evy-driven and fractionally integrated ARMA processes with continuous time parameter.
+\textit{Statistica Sinica}, 15(2), 477--494.
+
+\bibitem[Carr and Lee(2009)]{CarrLee2009}
+Carr, P., \& Lee, R. (2009).
+Volatility derivatives.
+\textit{Annual Review of Financial Economics}, 1, 1--21.
+
+\bibitem[Dorfleitner and Wimmer(2010)]{DorfleitnerWimmer2010}
+Dorfleitner, G., \& Wimmer, M. (2010).
+The pricing of temperature futures at the Chicago Mercantile Exchange.
+\textit{Journal of Banking \& Finance}, 34(6), 1360--1370.
+
+\bibitem[Engle(1982)]{Engle1982}
+Engle, R. F. (1982).
+Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation.
+\textit{Econometrica}, 50(4), 987--1007.
+
+\bibitem[Garcia et al.(1998)Garcia, Torres, Prieto, and de Francisco]{Garcia1998}
+Garcia, A., Torres, J. L., Prieto, E., \& de Francisco, A. (1998).
+Fitting wind speed distributions: a case study.
+\textit{Solar Energy}, 62(2), 139--144.
+
+\bibitem[H\"ardle and L\'opez Cabrera(2009)]{HardleLopezCabrera2009}
+H\"ardle, W. K., \& L\'opez Cabrera, B. (2009).
+\textit{Implied market price of weather risk} (SFB 649 Discussion Paper No.\ 2009-001).
+Humboldt-Universit\"at zu Berlin, Collaborative Research Center 649 ``Economic Risk.''
+
+\bibitem[Haslett and Raftery(1989)]{HaslettRaftery1989}
+Haslett, J., \& Raftery, A. E. (1989).
+Space-time modelling with long-memory dependence: assessing Ireland's wind power resource.
+\textit{Journal of the Royal Statistical Society: Series C (Applied Statistics)}, 38(1), 1--50.
+
+\bibitem[Heston(1993)]{Heston1993}
+Heston, S. L. (1993).
+A closed-form solution for options with stochastic volatility with applications to bond and currency options.
+\textit{Review of Financial Studies}, 6(2), 327--343.
+
+\bibitem[Kavasseri and Seetharaman(2009)]{KavasseriSeetharaman2009}
+Kavasseri, R. G., \& Seetharaman, K. (2009).
+Day-ahead wind speed forecasting using f-ARIMA models.
+\textit{Renewable Energy}, 34(5), 1388--1393.
+
+\bibitem[Schwartz(1997)]{Schwartz1997}
+Schwartz, E. S. (1997).
+The stochastic behavior of commodity prices: implications for valuation and hedging.
+\textit{Journal of Finance}, 52(3), 923--973.
+
+\bibitem[Tol(1997)]{Tol1997}
+Tol, R. S. J. (1997).
+Autoregressive conditional heteroscedasticity in daily wind speed measurements.
+\textit{Theoretical and Applied Climatology}, 56(1--2), 113--122.
+
+\bibitem[Torres et al.(2005)Torres, Garcia, De Blas, and De Francisco]{Torres2005}
+Torres, J. L., Garcia, A., De Blas, M., \& De Francisco, A. (2005).
+Forecast of hourly average wind speed with ARMA models in Navarre (Spain).
+\textit{Solar Energy}, 79(1), 65--77.
+
+\bibitem[Tuller and Brett(1984)]{TullerBrett1984}
+Tuller, S. E., \& Brett, A. C. (1984).
+The characteristics of wind velocity that favor the Weibull distribution in wind speed analysis.
+\textit{Journal of Climate and Applied Meteorology}, 23(1), 124--134.
+
+\end{thebibliography}
+
+\end{document}
