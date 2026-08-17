@@ -202,12 +202,12 @@ Table~\ref{tab:ar4-diag} summarises the Ljung--Box tests on the AR(4) residuals 
 \textbf{Test} & \textbf{Dataset A} & \textbf{Dataset B} \\
 \midrule
 Ljung--Box $\hat\varepsilon(t)$, lag 20 ($p$) & $0.506$ & $0.511$ \\
-Ljung--Box $\hat\varepsilon(t)^2$, lag 20 ($p$) & $0.0033$ & $0.511^{\ast}$ \\
+Ljung--Box $\hat\varepsilon(t)^2$, lag 20 ($p$) & $0.0033$ & $0.2724^{\ast}$ \\
 ARCH-LM(5) on entry residuals ($p$) & $0.0021$ & $0.0054$ \\
 \bottomrule
 \end{tabular}
 \vspace{2pt}
-{\footnotesize $^{\ast}$Dataset B's own source document is internally inconsistent on this specific statistic: its narrative text states that the Ljung--Box test on squared residuals rejects homoskedasticity at lags 5 and 10 ($p = 0.0048$ and $0.0419$), but the accompanying table reports only a single lag-20 statistic with $p = 0.2694$ (a pass). Both figures come from the same source document; this table reports the lag-20 value actually tabulated there, and the discrepancy with the surrounding prose is flagged here rather than silently resolved. The ARCH-LM test at entry (final row) is unaffected by this issue and is significant in both datasets, which is the operative finding motivating Section~\ref{sec:phase3}.}
+{\footnotesize $^{\ast}$Dataset B's source analysis is internally inconsistent on its squared-residual diagnostics: the narrative text reports that the Ljung--Box test rejects homoskedasticity at lags 5 and 10 ($p = 0.0048$ and $0.0419$), while the lag-20 value tabulated there is $0.2724$ (a pass). The cell above reports the lag-20 value from the source table. Note that lags 5 and 10 rejections are the substantive finding motivating GARCH, regardless of the lag-20 outcome, and the ARCH-LM entry-residuals test (final row) is independently significant in both datasets.}
 \end{table}
 
 \subsection{Forecast Accuracy versus Persistence}
@@ -314,7 +314,10 @@ The seasonal pattern of $h(t)$ itself differs qualitatively between the two data
 \subsection{Standardised Residual Diagnostics}
 \label{sec:phase3-diag}
 
-Table~\ref{tab:garch-diag} reports diagnostics on the standardised residuals $z(t) = \hat\varepsilon(t)/\sqrt{h(t)}$. Both datasets pass the Ljung--Box test for remaining serial correlation and remaining ARCH effects on $z(t)$ and $z(t)^2$ at conventional significance, confirming that GARCH(1,1) is an adequate specification for the conditional-variance dynamics in both cases. The two datasets diverge, however, in the shape of their standardised residuals: Dataset A's $z(t)$ is leptokurtic (excess kurtosis $+1.12$), with a heavy right tail driven substantially by a single extreme observation (28~June~2017, $z = +5.79$), while Dataset B's is mildly platykurtic (excess kurtosis $-0.28$), thinner-tailed than Gaussian. Neither departure is treated as invalidating the GARCH(1,1) specification, since both series pass the joint white-noise tests that matter for the volatility model itself, but the residual non-normality, in whichever direction, motivates the heavy-tailed Normal-Inverse-Gaussian treatment introduced in Section~\ref{sec:phase4-nig}. One further asymmetry is worth flagging directly rather than smoothing over: an ARCH-LM test on Dataset B's standardised residuals is marginally significant at 5\% ($p = 0.0185$), where the equivalent test on Dataset A's standardised residuals passes comfortably ($p = 0.821$); Dataset B's own summary narrative characterises its residuals as passing validation cleanly, a characterisation that this specific test result only partially supports.
+Table~\ref{tab:garch-diag} reports diagnostics on the standardised residuals $z(t) = \hat\varepsilon(t)/\sqrt{h(t)}$. Both datasets pass the Ljung--Box test for remaining serial correlation and remaining ARCH effects on $z(t)$ and $z(t)^2$ at conventional significance, confirming that GARCH(1,1) is an adequate specification for the conditional-variance dynamics in both cases. The two datasets diverge, however, in the shape of their standardised residuals: Dataset A's $z(t)$ is leptokurtic (excess kurtosis $+1.12$), with a heavy right tail driven substantially by a single extreme observation (28~June~2017, $z = +5.79$), while Dataset B's is mildly platykurtic (excess kurtosis $-0.28$), thinner-tailed than Gaussian. Neither departure is treated as invalidating the GARCH(1,1) specification, since both series pass the joint white-noise tests that matter for the volatility model itself, but the residual non-normality, in whichever direction, motivates the heavy-tailed Normal-Inverse-Gaussian treatment introduced in Section~\ref{sec:phase4-nig}. %% TODO (verify before submission): Phase 3 reports ARCH-LM p=0.0185 on Dataset B
+%% standardised residuals, but Phase 7 (same GARCH model, full sample) reports p>0.05.
+%% Confirm which sample window the Phase 3 value uses before finalising this paragraph.
+One further asymmetry is worth flagging directly rather than smoothing over: an ARCH-LM test on Dataset B's standardised residuals is marginally significant at 5\% ($p = 0.0185$), where the equivalent test on Dataset A's standardised residuals passes comfortably ($p = 0.821$); Dataset B's own summary narrative characterises its residuals as passing validation cleanly, a characterisation that this specific test result only partially supports.
 
 \begin{table}[htbp]
 \centering
@@ -385,7 +388,7 @@ $\alpha_4$ & $0.3908$ & $0.5188$ \\
 \subsection{Eigenvalues and Stationarity}
 \label{sec:phase4-eigen}
 
-Stationarity of the continuous-time system requires every eigenvalue of $A$ to have a strictly negative real part, the continuous-time analogue of the discrete unit-circle condition. Table~\ref{tab:car4-eigen} confirms this for both datasets. In both cases the eigenvalues comprise one complex-conjugate pair and two real values; the complex pair generates an oscillatory component in the impulse-response kernel (Section~\ref{sec:phase4-samuelson}) with a period of roughly two weeks in both datasets ($2\pi/0.465 \approx 13.5$ days for Dataset A), consistent with mid-latitude synoptic weather cycles. The dominant (least negative) eigenvalue implies a mean-reversion half-life of 2.33 days for Dataset A, close to the 2.0-day half-life already found directly from the discrete AR(4) roots in Section~\ref{sec:phase2-coefs}. For Dataset B the dominant eigenvalue implies a half-life of 1.24 days, markedly faster than the roughly 40-day half-life of the GARCH volatility \emph{regime} found in Section~\ref{sec:phase3-estimates}. This distinction is worth stating explicitly, since the two numbers answer different questions: the CAR(4) eigenvalue governs how quickly the \emph{mean level} of a wind-speed anomaly reverts, while the GARCH persistence governs how quickly the \emph{variance regime} it occurred in reverts, and there is no reason to expect the two rates to coincide.
+Stationarity of the continuous-time system requires every eigenvalue of $A$ to have a strictly negative real part, the continuous-time analogue of the discrete unit-circle condition. Table~\ref{tab:car4-eigen} confirms this for both datasets. In both cases the eigenvalues comprise one complex-conjugate pair and two real values; the complex pair generates an oscillatory component in the impulse-response kernel (Section~\ref{sec:phase4-samuelson}) with periods that differ substantially across the two datasets: approximately 13.5 days for Dataset A ($2\pi/0.465$) and approximately 24.6 days for Dataset B ($2\pi/0.255$). Both are consistent with mid-latitude synoptic weather cycles, which span a 10--30-day range depending on the atmospheric-circulation pattern. The dominant (least negative) eigenvalue implies a mean-reversion half-life of 2.33 days for Dataset A, close to the 2.0-day half-life already found directly from the discrete AR(4) roots in Section~\ref{sec:phase2-coefs}. For Dataset B the dominant eigenvalue implies a half-life of 1.24 days, markedly faster than the roughly 40-day half-life of the GARCH volatility \emph{regime} found in Section~\ref{sec:phase3-estimates}. This distinction is worth stating explicitly, since the two numbers answer different questions: the CAR(4) eigenvalue governs how quickly the \emph{mean level} of a wind-speed anomaly reverts, while the GARCH persistence governs how quickly the \emph{variance regime} it occurred in reverts, and there is no reason to expect the two rates to coincide.
 
 \begin{table}[htbp]
 \centering
@@ -395,9 +398,10 @@ Stationarity of the continuous-time system requires every eigenvalue of $A$ to h
 \toprule
 & \textbf{Dataset A} & \textbf{Dataset B} \\
 \midrule
-$\lambda_1$ (real) & $-1.2004$ & $-0.5602$ \\
-$\lambda_{2,3}$ (complex pair) & $-0.9358 \pm 0.4653i$ & $-1.0730 \pm 0.2550i$ \\
-$\lambda_4$ (real, dominant) & $-0.2980$ & (see $\lambda_1$) \\
+Complex pair $\lambda_{c},\bar\lambda_{c}$ & $-0.9358 \pm 0.4653i$ & $-1.0730 \pm 0.2550i$ \\
+Oscillatory period (days) & $13.5$ & $24.6$ \\
+Real eigenvalue & $-1.2004$ & $-0.7614$ \\
+Dominant real $\lambda_{\min}$ & $-0.2980$ & $-0.5602$ \\
 All $\mathrm{Re}(\lambda) < 0$? & \textbf{Yes} & \textbf{Yes} \\
 Half-life, dominant mode (days) & $2.33$ & $1.24$ \\
 \bottomrule
