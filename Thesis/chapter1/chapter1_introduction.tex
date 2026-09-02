@@ -164,7 +164,7 @@ Jarque--Bera $p$-value & $< 0.000001$ & normality strongly rejected \\
 \end{tabular}
 \end{table}
 
-A Weibull distribution fit by maximum likelihood gives shape $\hat k = 2.64$ and scale $\hat c = 2.77$~m/s, placing the shape parameter in the range of two to three typically reported in wind-resource assessment, above the Rayleigh value of $k = 2$ that the \citet{TullerBrett1984} isotropy argument reviewed in Section~\ref{sec:lit-stats} would imply; however, on an AIC/BIC comparison against a lognormal fit ($\hat m = 0.84$, $\hat s = 0.34$), the lognormal wins decisively (log-likelihood $-1{,}730.6$ versus $-1{,}960.5$ for the Weibull, a gap of roughly 460 AIC units). This is a substantive departure from the \citet{TullerBrett1984}--\citet{Garcia1998} consensus, and is attributable to the 10~m measurement height: the isotropy assumption behind the Rayleigh--Weibull derivation is a free-atmosphere approximation, progressively violated by surface friction and diurnal boundary-layer effects closer to the ground, and the lognormal's thinner left tail better matches the empirical absence of near-zero daily averages at this height.
+A Weibull distribution fit by maximum likelihood gives shape $\hat k = 2.6368$ and scale $\hat c = 2.7729$~m/s, placing the shape parameter in the range of two to three typically reported in wind-resource assessment, above the Rayleigh value of $k = 2$ that the \citet{TullerBrett1984} isotropy argument reviewed in Section~\ref{sec:lit-stats} would imply; however, on an AIC/BIC comparison against a lognormal fit ($\hat m = 0.8423$, $\hat s = 0.3405$), the lognormal wins decisively (log-likelihood $-1{,}730.6$ versus $-1{,}960.5$ for the Weibull, a gap of roughly 460 AIC units). This is a substantive departure from the \citet{TullerBrett1984}--\citet{Garcia1998} consensus, and is attributable to the 10~m measurement height: the isotropy assumption behind the Rayleigh--Weibull derivation is a free-atmosphere approximation, progressively violated by surface friction and diurnal boundary-layer effects closer to the ground, and the lognormal's thinner left tail better matches the empirical absence of near-zero daily averages at this height.
 
 The Box--Cox transformation (Section~\ref{sec:lit-stats}) is applied to bring the series toward normality. The likelihood-maximising value is $\lambda_{\text{opt}} = -0.450$, which achieves near-perfect Gaussianisation (skewness $-0.005$, excess kurtosis $+0.128$, Jarque--Bera $p = 0.606$); however, the closed-form pricing formulas used in later phases require $1/\lambda$ to be a positive integer, and $-0.450$ does not satisfy this constraint. Following \citet{BenthSaltyteBenth2009}, who adopt $\lambda \in \{0.1, 0.2\}$ for the same CAR$(p)$ continuous-time embedding, $\lambda = 0.1$ (so that $1/\lambda = 10$) is adopted as the frozen working parameter for this dataset throughout the thesis, at the cost of leaving a residual right skew (skewness $0.601$, Jarque--Bera $p \approx 0$) that the seasonal-mean and seasonal-variance decomposition and the AR(4) fit of Chapter~2 subsequently reduce further. After the truncated Fourier decomposition into a seasonal mean $\Lambda(t)$ (annual harmonic dominant, $R^2 = 0.126$) and a seasonal variance $\sigma^2(t)$ (mean level $C_0 = 0.13138$, winter-to-summer variance ratio of approximately $6.9{:}1$, $R^2 = 0.226$), the resulting standardised series $\widetilde W(t)$ has mean $0.001$ and standard deviation $0.967$, close to the zero-mean, unit-variance target, but retains significant serial autocorrelation and conditional heteroskedasticity (Ljung--Box $p < 0.001$ on both $\widetilde W(t)$ and $\widetilde W(t)^2$ at all tested lags), which motivates the AR(4) and GARCH(1,1) layers developed in Chapter~2.
 
@@ -197,7 +197,7 @@ Jarque--Bera $p$-value & $< 0.001$ & normality rejected \\
 \end{tabular}
 \end{table}
 
-Consistent with the \citet{TullerBrett1984}--\citet{Garcia1998} consensus, and in contrast with Dataset A, the Weibull distribution ($\hat k = 2.67$, $\hat c = 9.09$) fits Dataset B better than the lognormal on both AIC and BIC. The Box--Cox likelihood is maximised at $\lambda_{\text{opt}} = 0.404$; the tractable value adopted for closed-form pricing is $\lambda = 0.5$ (so $1/\lambda = 2$), a much smaller rounding distance than the one forced on Dataset A, reflecting the higher hub-height mean wind speed's less extreme skew. The Fourier seasonal-mean fit is again dominated by the annual harmonic ($R^2 = 0.103$), and the seasonal-variance fit yields a mean level $C_0 \approx 1.163$ with $\sigma^2(t)$ ranging over $[0.944, 1.463]$, a winter-to-summer variance ratio of approximately $1.55{:}1$. Expressed on the same basis, the seasonal modulation at Nordfriesland is thus far calmer than the $6.9{:}1$ ratio found for Bologna, though both datasets place peak variance in the winter months. The resulting standardised series $\widetilde W(t)$ again passes its basic centring and scaling checks (mean $\approx 0$, standard deviation $\approx 1.005$) while retaining significant autocorrelation in levels and in squares, motivating the same AR(4) and GARCH(1,1) layers applied to Dataset A. As an illustrative application, integrating the fitted Weibull density against the power curve of a representative 3~MW turbine at 100~m hub height yields an annual energy production of 6.753~GWh and a capacity factor of 25.70\%, a figure consistent with onshore wind performance in the North Sea coastal region and the figure used for the illustrative revenue calculation in Section~\ref{sec:motivation}.
+Consistent with the \citet{TullerBrett1984}--\citet{Garcia1998} consensus, and in contrast with Dataset A, the Weibull distribution ($\hat k = 2.67$, $\hat c = 9.09$) fits Dataset B better than the lognormal on both AIC and BIC. The Box--Cox likelihood is maximised at $\lambda_{\text{opt}} = 0.404$; the tractable value adopted for closed-form pricing is $\lambda = 0.5$ (so $1/\lambda = 2$), a much smaller rounding distance than the one forced on Dataset A, reflecting the higher hub-height mean wind speed's less extreme skew. The Fourier seasonal-mean fit is again dominated by the annual harmonic ($R^2 = 0.103$), and the seasonal-variance fit yields a mean level $C_0 = 1.16277$ with $\sigma^2(t)$ ranging over $[0.944, 1.463]$, a winter-to-summer variance ratio of approximately $1.55{:}1$. Expressed on the same basis, the seasonal modulation at Nordfriesland is thus far calmer than the $6.9{:}1$ ratio found for Bologna, though both datasets place peak variance in the winter months. The resulting standardised series $\widetilde W(t)$ again passes its basic centring and scaling checks (mean $\approx 0$, standard deviation $\approx 1.005$) while retaining significant autocorrelation in levels and in squares, motivating the same AR(4) and GARCH(1,1) layers applied to Dataset A. As an illustrative application, integrating the fitted Weibull density against the power curve of a representative 3~MW turbine at 100~m hub height yields an annual energy production of 6.753~GWh and a capacity factor of 25.70\%, a figure consistent with onshore wind performance in the North Sea coastal region and the figure used for the illustrative revenue calculation in Section~\ref{sec:motivation}.
 
 Dataset B is used throughout this thesis as the \emph{reference} dataset: it is geographically aligned with the SMARD German onshore wind generation series described next, measured directly at hub height, and long enough (ten years) to support the out-of-time validation exercise reported in Chapter~3, in which full-sample parameters are assessed against a 2020--2024 hold-out without re-calibration on the restricted window. All headline empirical claims in this thesis (the fitted variance-swap fair strike, the Value of Information estimate, and the CAWS hedging simulation) rest primarily on Dataset B, with Dataset A retained as the benchmark against which the Value of Information is measured.
 
@@ -253,125 +253,14 @@ Chapter~2, \emph{Methodology and Empirical Wind-Speed Modelling}, develops the m
 
 Chapter~3, \emph{Derivatives Pricing, Risk Management and Conclusions}, applies the calibrated model to answer the three research questions posed in Section~\ref{sec:rqs}.
 
-It first prices the synthetic wind variance swap on both datasets, distinguishing the market-implied Track~A fair strike, the $252\times$-annualised realised variance of SMARD generation log-returns, from the model-implied Track~B fair strike $K_{\text{var}}^B = h \times C_0$. The two tracks are computed under different annualisation and unit conventions: Track~A is annualised and expressed in the units of generation log-returns, while Track~B is left un-annualised in standardised wind units. Their raw numerical gap, roughly two orders of magnitude, is an artefact of those conventions rather than a measure of model error, and the two are reconciled by a delta-method rescaling before any comparison is drawn.
+It first prices the synthetic wind variance swap on both datasets, distinguishing the market-implied Track~A fair strike, the $252\times$-annualised realised variance of SMARD generation log-returns, from the model-implied Track~B fair strike $K_{\text{var}}^B = h \times C_0$, the closed-form expression derived under the piecewise-constant-volatility convention of \citet{Tol1997}. The two tracks are computed under different annualisation and unit conventions: Track~A is annualised and expressed in the units of generation log-returns, while Track~B is left un-annualised in standardised wind units. Their raw numerical gap, roughly two orders of magnitude, is an artefact of those conventions rather than a measure of model error, and the two are reconciled by a delta-method rescaling before any comparison is drawn.
 
 It then evaluates the forecasting models of Chapter~2 against the persistence benchmark using Diebold--Mariano tests \citep{DieboldMariano1995, HarveyEtAl1997}. The result is a binary split rather than a graded hierarchy: every fitted specification, from AR(4) through CAR(4) with Normal-Inverse-Gaussian innovations, improves on persistence at any conventional significance level, while being observationally equivalent to the others in one-step point-forecast terms. That equivalence is itself informative. It establishes that the models are distinguished not by conditional-mean accuracy but by their conditional-variance and tail representations, which is precisely why the thesis evaluates them on pricing and hedging criteria rather than on root mean squared error alone.
 
 Chapter~3 then computes the Value of Information from the Dataset~A-to-B upgrade, both before and after a wind-profile height correction restricted strictly to that comparison, and evaluates the CAWS instrument of \citet{AlexandridisZapranis2013} as a left-tail complement to the variance swap on the non-overlapping annual basis defined in Section~\ref{sec:data-comparison}. It closes with a synthesis section that states the limitations of the $\theta = 0$ benchmark and of the daily-frequency stochastic-volatility identification problem, and outlines the option-implied and higher-frequency extensions left to future work.
 
 \newpage
-\begin{thebibliography}{99}
-
-\bibitem[Ailliot et al.(2006)Ailliot, Monbet, and Prevosto]{AilliotEtAl2006}
-Ailliot, P., Monbet, V., \& Prevosto, M. (2006).
-An autoregressive model with time-varying coefficients for wind fields.
-\textit{Environmetrics}, 17(2), 107--117.
-
-\bibitem[Alaton et al.(2002)Alaton, Djehiche, and Stillberger]{AlatonEtAl2002}
-Alaton, P., Djehiche, B., \& Stillberger, D. (2002).
-On modelling and pricing weather derivatives.
-\textit{Applied Mathematical Finance}, 9(1), 1--20.
-
-\bibitem[Alexandridis and Zapranis(2013)]{AlexandridisZapranis2013}
-Alexandridis, A., \& Zapranis, A. (2013).
-Wind derivatives: modeling and pricing.
-\textit{Computational Economics}, 41(3), 299--326.
-
-\bibitem[Barndorff-Nielsen and Shephard(2001)]{BarndorffNielsenShephard2001}
-Barndorff-Nielsen, O. E., \& Shephard, N. (2001).
-Non-Gaussian Ornstein--Uhlenbeck-based models and some of their uses in financial economics.
-\textit{Journal of the Royal Statistical Society: Series B}, 63(2), 167--241.
-
-\bibitem[Benth and \v{S}alty\.{t}\.{e} Benth(2009)]{BenthSaltyteBenth2009}
-Benth, F. E., \& \v{S}alty\.{t}\.{e} Benth, J. (2009).
-Dynamic pricing of wind futures.
-\textit{Energy Economics}, 31(1), 16--24.
-
-\bibitem[Bollerslev(1986)]{Bollerslev1986}
-Bollerslev, T. (1986).
-Generalized autoregressive conditional heteroskedasticity.
-\textit{Journal of Econometrics}, 31(3), 307--327.
-
-\bibitem[Brockwell and Marquardt(2005)]{BrockwellMarquardt2005}
-Brockwell, P. J., \& Marquardt, T. (2005).
-L\'evy-driven and fractionally integrated ARMA processes with continuous time parameter.
-\textit{Statistica Sinica}, 15(2), 477--494.
-
-\bibitem[Carr and Lee(2009)]{CarrLee2009}
-Carr, P., \& Lee, R. (2009).
-Volatility derivatives.
-\textit{Annual Review of Financial Economics}, 1, 1--21.
-
-\bibitem[Diebold and Mariano(1995)]{DieboldMariano1995}
-Diebold, F. X., \& Mariano, R. S. (1995).
-Comparing predictive accuracy.
-\textit{Journal of Business \& Economic Statistics}, 13(3), 253--263.
-
-\bibitem[Dorfleitner and Wimmer(2010)]{DorfleitnerWimmer2010}
-Dorfleitner, G., \& Wimmer, M. (2010).
-The pricing of temperature futures at the Chicago Mercantile Exchange.
-\textit{Journal of Banking \& Finance}, 34(6), 1360--1370.
-
-\bibitem[Engle(1982)]{Engle1982}
-Engle, R. F. (1982).
-Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation.
-\textit{Econometrica}, 50(4), 987--1007.
-
-\bibitem[Garcia et al.(1998)Garcia, Torres, Prieto, and de Francisco]{Garcia1998}
-Garcia, A., Torres, J. L., Prieto, E., \& de Francisco, A. (1998).
-Fitting wind speed distributions: a case study.
-\textit{Solar Energy}, 62(2), 139--144.
-
-\bibitem[H\"ardle and L\'opez Cabrera(2009)]{HardleLopezCabrera2009}
-H\"ardle, W. K., \& L\'opez Cabrera, B. (2009).
-\textit{Implied market price of weather risk} (SFB 649 Discussion Paper No.\ 2009-001).
-Humboldt-Universit\"at zu Berlin, Collaborative Research Center 649 ``Economic Risk.''
-
-\bibitem[Harvey et al.(1997)Harvey, Leybourne, and Newbold]{HarveyEtAl1997}
-Harvey, D., Leybourne, S., \& Newbold, P. (1997).
-Testing the equality of prediction mean squared errors.
-\textit{International Journal of Forecasting}, 13(2), 281--291.
-
-\bibitem[Haslett and Raftery(1989)]{HaslettRaftery1989}
-Haslett, J., \& Raftery, A. E. (1989).
-Space-time modelling with long-memory dependence: assessing Ireland's wind power resource.
-\textit{Journal of the Royal Statistical Society: Series C (Applied Statistics)}, 38(1), 1--50.
-
-\bibitem[Heston(1993)]{Heston1993}
-Heston, S. L. (1993).
-A closed-form solution for options with stochastic volatility with applications to bond and currency options.
-\textit{Review of Financial Studies}, 6(2), 327--343.
-
-\bibitem[Kavasseri and Seetharaman(2009)]{KavasseriSeetharaman2009}
-Kavasseri, R. G., \& Seetharaman, K. (2009).
-Day-ahead wind speed forecasting using f-ARIMA models.
-\textit{Renewable Energy}, 34(5), 1388--1393.
-
-\bibitem[Peterson and Hennessey(1978)]{PetersonHennessey1978}
-Peterson, E. W., \& Hennessey, J. P., Jr. (1978).
-On the use of power laws for estimates of wind power potential.
-\textit{Journal of Applied Meteorology}, 17(3), 390--394.
-
-\bibitem[Schwartz(1997)]{Schwartz1997}
-Schwartz, E. S. (1997).
-The stochastic behavior of commodity prices: implications for valuation and hedging.
-\textit{Journal of Finance}, 52(3), 923--973.
-
-\bibitem[Tol(1997)]{Tol1997}
-Tol, R. S. J. (1997).
-Autoregressive conditional heteroscedasticity in daily wind speed measurements.
-\textit{Theoretical and Applied Climatology}, 56(1--2), 113--122.
-
-\bibitem[Torres et al.(2005)Torres, Garcia, De Blas, and De Francisco]{Torres2005}
-Torres, J. L., Garcia, A., De Blas, M., \& De Francisco, A. (2005).
-Forecast of hourly average wind speed with ARMA models in Navarre (Spain).
-\textit{Solar Energy}, 79(1), 65--77.
-
-\bibitem[Tuller and Brett(1984)]{TullerBrett1984}
-Tuller, S. E., \& Brett, A. C. (1984).
-The characteristics of wind velocity that favor the Weibull distribution in wind speed analysis.
-\textit{Journal of Climate and Applied Meteorology}, 23(1), 124--134.
-
-\end{thebibliography}
+%% Single shared thesis bibliography (deduplicated across all chapters).
+\input{../thesis_bibliography}
 
 \end{document}
