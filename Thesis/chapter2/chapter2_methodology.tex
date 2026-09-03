@@ -608,6 +608,39 @@ These figures reconcile with the conditional-variance column of Table~\ref{tab:c
 
 The CIR parameters $(\kappa_V, \bar v, \xi, \rho)$ above are moment-matching proxies from the GARCH fit, not maximum-likelihood estimates of the continuous-time system itself, and this thesis does not attempt that estimation at daily frequency. The reason is an identification problem inherent to slow-mean-reverting variance processes sampled coarsely relative to their own half-life. With $\kappa_V \approx 0.018$ in both datasets, the implied mean-reversion half-life is on the order of 40 days, so that a daily observation interval provides roughly 40--60 observations per e-folding time; separating the mean-reversion speed $\kappa_V$ from the diffusion coefficient $\xi$ requires enough independent decay cycles to distinguish "reverts slowly with small shocks" from "reverts moderately with occasional large shocks," and at daily frequency the two are close to observationally equivalent. Dataset A compounds this with its short four-year window (1,462 daily observations, of which only a few dozen independent decay cycles are available) and its 10~m measurement height, which would require a further profile correction before any estimated variance dynamics could be applied to hub-height pricing instruments. The designated upgrade path for both datasets is hourly ECMWF ERA5 reanalysis data at the same locations, which would increase the observation count by roughly two orders of magnitude and make the $\xi/\kappa_V$ ratio separately identifiable. Specifically, hourly sampling resolves intraday volatility clustering and the pronounced diurnal cycles of boundary-layer wind speed, high-frequency dynamics that daily aggregation inherently smooths over. Capturing these intraday mechanics is what would allow the diffusion coefficient $\xi$ to be estimated independently of the multi-week synoptic mean-reversion $\kappa_V$, resolving the observational equivalence described above. This is left to future work; for the daily-frequency scope of this thesis, the GARCH-derived proxies under the $\theta=0$, piecewise-constant-$h$ approximation are the operative tool, and are what Chapter~3 uses throughout.
 
+\section{Summary and Handover to Chapter 3}
+\label{sec:phase-summary}
+
+The pipeline developed in this chapter delivers a small number of fitted quantities to the pricing exercise that follows, and it is worth collecting them in one place rather than leaving Chapter~3 to gather them from five separate sections. Table~\ref{tab:handover} lists every parameter Chapter~3 consumes, with the section that fixes it. All are frozen: none is re-estimated downstream, and where Chapter~3 quotes a figure that differs from one below, it is because a different evaluation sample or a different unit convention is in use, and it says so at that point.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Parameters carried forward from Chapter 2 into Chapter 3.}
+\label{tab:handover}
+\begin{tabular}{l l r r}
+\toprule
+\textbf{Quantity} & \textbf{Fixed in} & \textbf{Dataset A} & \textbf{Dataset B} \\
+\midrule
+Box--Cox $\lambda$ (tractable) & \S\ref{sec:phase1-boxcox} & $0.1$ & $0.5$ \\
+Seasonal variance constant $C_0$ & \S\ref{sec:phase1-seasonal} & $0.13138$ & $1.16277$ \\
+Std.\ deviation of $\widetilde W(t)$ & \S\ref{sec:phase1-wtilde} & $0.967$ & $1.005$ \\
+AR(4) $\beta_1,\dots,\beta_4$ & \S\ref{sec:phase2-coefs} & Table~\ref{tab:ar4} & Table~\ref{tab:ar4} \\
+GARCH $(\omega,\alpha,\beta)$ & \S\ref{sec:phase3-estimates} & Table~\ref{tab:garch} & Table~\ref{tab:garch} \\
+Persistence $\alpha+\beta$ & \S\ref{sec:phase3-estimates} & $0.9835$ & $0.9821$ \\
+Volatility half-life (days) & \S\ref{sec:phase3-estimates} & $41.6$ & $38.3$ \\
+Unconditional variance & \S\ref{sec:phase3-estimates} & $0.608$ & $0.752$ \\
+Pricing-date state $h(t_0)$ & \S\ref{sec:phase3-estimates} & $0.4137$ & $0.7511$ \\
+CAR(4) $\alpha_1,\dots,\alpha_4$ & \S\ref{sec:phase4-euler} & Table~\ref{tab:car4-alpha} & Table~\ref{tab:car4-alpha} \\
+NIG $(\hat\alpha,\hat\delta)$ & \S\ref{sec:phase4-nig} & $4.374$, $2.087$ & $2{,}649.57$, $51.516$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three properties of these quantities, rather than the quantities themselves, do most of the work in Chapter~3. The first is that $C_0$ and $h(t_0)$ are the only two parameters entering the closed-form fair strike $K_{\text{var}}^B = h \times C_0$, so the entire pricing result rests on two numbers out of the table above, one climatological and one a conditional state. The second is that the four specifications compared in Chapter~3 share the AR(4) conditional mean unchanged, for the reason given in Section~\ref{sec:phase2-rmse}: they are observationally equivalent at a one-day horizon by construction, and can only be separated on criteria that read the conditional variance or the tails. The third is that $C_0$ is a variance in Box--Cox-transformed units, differing between the two datasets not only in the climatology it measures but in the scale on which it is measured, a distinction that Chapter~3 must undo before the two datasets' strikes can be compared.
+
+Two results are carried forward as qualifications rather than as inputs. The Feller condition of Section~\ref{sec:phase5-feller} holds comfortably for Dataset~B on every estimator considered but is estimator-dependent for Dataset~A, failing on the full-sample volatility-of-volatility estimator that cross-dataset comparability requires; the continuous-time variance process is therefore well posed for the reference dataset and not demonstrably so for the proxy. And the conditional-forecast table of Section~\ref{sec:phase4-forecast} is retained as a recorded output whose horizon profile is indicative rather than calibrated, for the state-space convention reason set out there. Neither qualification affects the pricing formula, which uses $h(t_0)$ and $C_0$ alone.
+
 \newpage
 %% Single shared thesis bibliography (deduplicated across all chapters).
 \input{../thesis_bibliography}
