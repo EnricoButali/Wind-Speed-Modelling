@@ -12,7 +12,12 @@
       "Bash(python -)",
       "PowerShell(Get-Command python, py, python3 -ErrorAction SilentlyContinue)",
       "Bash(git check-ignore *)",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "Bash(grep -iE \"\\\\.md$|dump|prompts\")",
+      "Bash(grep -vE \"\\\\.\\(aux|log|out\\)$\")",
+      "Bash(git ls-files *)",
+      "Bash(grep -nE \"\\\\\\\\\\\\\\\\title|\\\\\\\\\\\\\\\\author|supervisor|Supervisor|Relatore|relatore|University|Universit|Master|Laurea|academic year|Anno\" Thesis/THESIS1_2.tex)",
+      "Bash(grep -rhoE \"\\\\\\\\\\\\\\\\\\(title|author\\)\\\\{[^}]*\\\\}\" Thesis/*.tex Thesis/chapter*/*.tex)"
     ]
   }
 }
