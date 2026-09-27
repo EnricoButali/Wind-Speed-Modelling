@@ -17,7 +17,9 @@
       "Bash(grep -vE \"\\\\.\\(aux|log|out\\)$\")",
       "Bash(git ls-files *)",
       "Bash(grep -nE \"\\\\\\\\\\\\\\\\title|\\\\\\\\\\\\\\\\author|supervisor|Supervisor|Relatore|relatore|University|Universit|Master|Laurea|academic year|Anno\" Thesis/THESIS1_2.tex)",
-      "Bash(grep -rhoE \"\\\\\\\\\\\\\\\\\\(title|author\\)\\\\{[^}]*\\\\}\" Thesis/*.tex Thesis/chapter*/*.tex)"
+      "Bash(grep -rhoE \"\\\\\\\\\\\\\\\\\\(title|author\\)\\\\{[^}]*\\\\}\" Thesis/*.tex Thesis/chapter*/*.tex)",
+      "Bash(gh --version)",
+      "Bash(gh repo *)"
     ]
   }
 }
