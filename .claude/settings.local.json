@@ -10,7 +10,9 @@
       "PowerShell(Get-Command python3, py, conda 2>$null)",
       "PowerShell(Get-Content \"c:\\\\Users\\\\andre\\\\Desktop\\\\VS_RASHIP\\\\data\\\\Day-ahead_prices_1.csv\" -TotalCount 4 | ForEach-Object { $_ })",
       "Bash(python -)",
-      "PowerShell(Get-Command python, py, python3 -ErrorAction SilentlyContinue)"
+      "PowerShell(Get-Command python, py, python3 -ErrorAction SilentlyContinue)",
+      "Bash(git check-ignore *)",
+      "Bash(git fetch *)"
     ]
   }
 }
